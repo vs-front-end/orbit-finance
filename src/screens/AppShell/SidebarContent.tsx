@@ -205,7 +205,7 @@ export function SidebarContent({
             <button
               type='button'
               onClick={onToggle}
-              className='absolute top-1/2 -right-3 z-30 flex size-6 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-surface text-muted shadow-sm transition-colors hover:text-foreground'
+              className='absolute top-1/2 -right-3 z-30 flex size-5 -translate-y-1/2 items-center justify-center rounded-md border border-border bg-surface p-0 text-muted shadow-sm transition-colors hover:text-foreground'
               aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
             >
               {collapsed ? (

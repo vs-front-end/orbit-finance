@@ -36,6 +36,12 @@
   --color-chart-4: #ec4899;
   --color-chart-5: #34d399;
   --color-chart-6: #94a3b8;
+
+  --color-brand-spin-1: #ffffff;
+  --color-brand-spin-2: var(--color-foreground);
+  --color-brand-spin-3: #c5cad8;
+  --color-brand-spin-4: #f0f2f7;
+  --color-brand-spin-5: #b0b8c8;
 }
 
 body {
@@ -78,8 +84,30 @@ body {
   animation: orbit-border-spin 4s linear infinite;
 }
 
+.orbit-icon-gradient {
+  background: conic-gradient(
+    from var(--orbit-angle),
+    var(--color-brand-spin-1),
+    var(--color-brand-spin-2),
+    var(--color-brand-spin-3),
+    var(--color-brand-spin-4),
+    var(--color-brand-spin-5),
+    var(--color-brand-spin-1)
+  );
+  animation: orbit-border-spin 4s linear infinite;
+  mask-image: var(--orbit-mask);
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: var(--orbit-mask);
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .rgb-border {
+  .rgb-border,
+  .orbit-icon-gradient {
     animation: none;
   }
 }
