@@ -11,18 +11,16 @@ import {
 import { Plus } from 'lucide-react';
 
 import {
-  combineSummaryWithFixed,
   type Portfolio,
   type Transaction,
   type TransactionSide,
 } from '@/domain';
-import { useFixedIncomeViews, usePortfolioPositions } from '@/hooks';
+import { usePortfolioPositions } from '@/hooks';
 import { formatMoney } from '@/utils';
 
 import { PLValue, RefreshIndicator, StatCard } from '@/components';
 
 import { TransactionDialog } from './TransactionDialog';
-import { FixedIncomeTab } from './FixedIncomeTab';
 import { IncomesTab } from './IncomesTab';
 import { PortfolioActions } from './PortfolioActions';
 import { PortfolioHeader } from './PortfolioHeader';
@@ -37,18 +35,13 @@ export function InvestmentView({ portfolio }: { portfolio: Portfolio }) {
   const [editing, setEditing] = useState<Transaction | null>(null);
   const {
     views,
-    summary: equitySummary,
+    summary,
     transactions,
     isLoading,
     isFetchingQuotes,
     quotesUpdatedAt,
     refetchQuotes,
   } = usePortfolioPositions(portfolio.id);
-
-  const fixedIncome = useFixedIncomeViews(portfolio.id);
-  const summary = combineSummaryWithFixed(equitySummary, fixedIncome.totals);
-  const hasFixedIncomeTab = portfolio.currency === 'BRL';
-  const positionTickers = views.map((view) => view.ticker);
 
   return (
     <div className='flex flex-col gap-4 sm:gap-5'>
@@ -103,9 +96,6 @@ export function InvestmentView({ portfolio }: { portfolio: Portfolio }) {
             <div className='overflow-x-auto'>
               <TabsList>
                 <TabsTrigger value='positions'>Posições</TabsTrigger>
-                {hasFixedIncomeTab && (
-                  <TabsTrigger value='fixed-income'>Renda fixa</TabsTrigger>
-                )}
                 <TabsTrigger value='transactions'>Transações</TabsTrigger>
                 <TabsTrigger value='incomes'>Proventos</TabsTrigger>
               </TabsList>
@@ -118,11 +108,6 @@ export function InvestmentView({ portfolio }: { portfolio: Portfolio }) {
                 onNewTransaction={(ticker, side) => setDraft({ ticker, side })}
               />
             </TabsContent>
-            {hasFixedIncomeTab && (
-              <TabsContent value='fixed-income'>
-                <FixedIncomeTab portfolio={portfolio} />
-              </TabsContent>
-            )}
             <TabsContent value='transactions'>
               <TransactionsTable
                 currency={portfolio.currency}
@@ -133,7 +118,6 @@ export function InvestmentView({ portfolio }: { portfolio: Portfolio }) {
             <TabsContent value='incomes'>
               <IncomesTab
                 portfolio={portfolio}
-                tickers={positionTickers}
                 investedValue={summary.investedValue}
               />
             </TabsContent>

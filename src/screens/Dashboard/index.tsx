@@ -7,12 +7,13 @@ import {
   Text,
 } from '@stellar-ui-kit/web';
 
-import { useDashboardData, usePatrimonyItems } from '@/hooks';
+import { useDashboardData, usePatrimony } from '@/hooks';
 import { formatMoney } from '@/utils';
 
 import { PLValue, RefreshIndicator, StatCard } from '@/components';
 
 import { AllocationCard } from './AllocationCard';
+import { DividendsSummaryCard } from './DividendsSummaryCard';
 import { PortfolioCard } from './PortfolioCard';
 
 export function Dashboard() {
@@ -25,13 +26,10 @@ export function Dashboard() {
     quotesUpdatedAt,
     refetchQuotes,
   } = useDashboardData();
-  const { data: patrimonyItems } = usePatrimonyItems();
+  const { financialTotal, assetsTotal } = usePatrimony();
 
-  const miscTotal = (patrimonyItems ?? []).reduce(
-    (sum, item) => sum + item.value,
-    0,
-  );
-  const patrimonyTotal = consolidated.marketValue + miscTotal;
+  const patrimonyTotal = consolidated.marketValue + financialTotal;
+  const withAssets = patrimonyTotal + assetsTotal;
 
   if (isLoading) {
     return (
@@ -81,24 +79,19 @@ export function Dashboard() {
         </div>
       </header>
 
-      <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4'>
-        <StatCard label='Patrimônio'>
+      <div className='grid grid-cols-1 gap-3 xs:grid-cols-2 sm:gap-4 lg:grid-cols-4'>
+        <StatCard
+          label='Patrimônio'
+          sub={
+            assetsTotal > 0
+              ? `com bens ${formatMoney(withAssets, 'BRL')}`
+              : undefined
+          }
+        >
           {formatMoney(patrimonyTotal, 'BRL')}
         </StatCard>
         <StatCard label='Investido'>
           {formatMoney(consolidated.investedValue, 'BRL')}
-        </StatCard>
-        <StatCard label='P/L diário %'>
-          <PLValue value={consolidated.dailyPLPercent} />
-        </StatCard>
-        <StatCard label='P/L diário'>
-          <PLValue value={consolidated.dailyPL} currency='BRL' />
-        </StatCard>
-        <StatCard label='P/L líquido %'>
-          <PLValue value={consolidated.netPLPercent} />
-        </StatCard>
-        <StatCard label='P/L líquido'>
-          <PLValue value={consolidated.netPL} currency='BRL' />
         </StatCard>
         <StatCard label='Ganhos' hint='Posições no positivo'>
           <PLValue value={consolidated.gains} currency='BRL' />
@@ -106,6 +99,21 @@ export function Dashboard() {
         <StatCard label='Perdas' hint='Posições no negativo'>
           <PLValue value={consolidated.losses} currency='BRL' />
         </StatCard>
+        <StatCard label='P/L diário'>
+          <PLValue
+            value={consolidated.dailyPL}
+            currency='BRL'
+            percent={consolidated.dailyPLPercent}
+          />
+        </StatCard>
+        <StatCard label='P/L líquido'>
+          <PLValue
+            value={consolidated.netPL}
+            currency='BRL'
+            percent={consolidated.netPLPercent}
+          />
+        </StatCard>
+        <DividendsSummaryCard />
       </div>
 
       <div className='grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3'>

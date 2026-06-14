@@ -11,7 +11,6 @@ export {
   type NewPortfolio,
   type NewTransaction,
   type UpdateTransaction,
-  type NewIncome,
   type NewFixedIncome,
 } from './portfolios';
 export { cdiService, type CdiService } from './cdi';
@@ -21,6 +20,7 @@ export {
   type AllocationTargets,
 } from './targets';
 export { quotesService, type QuotesService } from './quotes';
+export { dividendsService, type DividendsService } from './dividends';
 export {
   historyService,
   type HistoryService,

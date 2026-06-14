@@ -20,8 +20,6 @@ export function toMonthlyRate(
   return period === 'yearly' ? (1 + ratePercent) ** (1 / 12) - 1 : ratePercent;
 }
 
-// Convenção Investidor Sardinha: a linha do mês fecha com os juros do mês;
-// o aporte entra depois do fechamento (rende a partir do mês seguinte).
 export function buildCompoundSchedule(params: {
   initialAmount: number;
   monthlyAmount: number;

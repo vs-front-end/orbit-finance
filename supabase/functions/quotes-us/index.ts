@@ -23,6 +23,9 @@ type AssetHit = {
   currency: 'BRL' | 'USD';
 };
 
+type DividendRequest = { ticker: string; symbol: string };
+type DividendEvent = { ticker: string; exDate: string; amount: number };
+
 async function fetchOne(symbol: string): Promise<Quote | null> {
   const response = await fetch(
     `${YAHOO}/${encodeURIComponent(symbol)}?interval=1d&range=1d`,
@@ -187,6 +190,61 @@ async function fetchIndexReturn(
   return (last / first - 1) * 100;
 }
 
+async function fetchDividends(
+  ticker: string,
+  symbol: string,
+  range: string,
+): Promise<DividendEvent[]> {
+  const response = await fetch(
+    `${YAHOO}/${encodeURIComponent(symbol)}?interval=1d&range=${range}&events=div`,
+    { headers: { 'User-Agent': 'Mozilla/5.0' } },
+  );
+  if (!response.ok) return [];
+
+  const data = await response.json();
+  const dividends = data?.chart?.result?.[0]?.events?.dividends ?? {};
+
+  return (Object.values(dividends) as Array<Record<string, unknown>>)
+    .filter(
+      (entry) =>
+        typeof entry.amount === 'number' && typeof entry.date === 'number',
+    )
+    .map((entry) => ({
+      ticker,
+      exDate: new Date((entry.date as number) * 1000)
+        .toISOString()
+        .slice(0, 10),
+      amount: entry.amount as number,
+    }));
+}
+
+async function fetchFxSeries(
+  range: string,
+): Promise<Array<{ date: string; rate: number }>> {
+  const response = await fetch(`${YAHOO}/USDBRL=X?interval=1d&range=${range}`, {
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+  });
+  if (!response.ok) return [];
+
+  const data = await response.json();
+  const result = data?.chart?.result?.[0];
+  const timestamps: unknown[] = result?.timestamp ?? [];
+  const closes: unknown[] = result?.indicators?.quote?.[0]?.close ?? [];
+
+  const series: Array<{ date: string; rate: number }> = [];
+  for (let i = 0; i < timestamps.length; i++) {
+    const ts = timestamps[i];
+    const close = closes[i];
+    if (typeof ts === 'number' && typeof close === 'number') {
+      series.push({
+        date: new Date(ts * 1000).toISOString().slice(0, 10),
+        rate: close,
+      });
+    }
+  }
+  return series;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
 
@@ -204,6 +262,25 @@ Deno.serve(async (req) => {
       return Response.json(await enrichSectors(body.enrichSectors), {
         headers: cors,
       });
+    }
+
+    if (Array.isArray(body.dividends)) {
+      const range = typeof body.range === 'string' ? body.range : '5y';
+      const results = await Promise.all(
+        (body.dividends as DividendRequest[]).map((request) =>
+          fetchDividends(
+            String(request.ticker),
+            String(request.symbol),
+            range,
+          ).catch(() => [] as DividendEvent[]),
+        ),
+      );
+      return Response.json(results.flat(), { headers: cors });
+    }
+
+    if (body.fx === 'USD-BRL') {
+      const range = typeof body.range === 'string' ? body.range : '5y';
+      return Response.json(await fetchFxSeries(range), { headers: cors });
     }
 
     if (body.indexDays !== undefined && body.indexDays !== null) {

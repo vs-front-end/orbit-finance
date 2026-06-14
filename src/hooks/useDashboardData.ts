@@ -1,19 +1,10 @@
 import { useEffect } from 'react';
 
 import type { AllocationSlice } from '@/components/Charts';
-import {
-  buildFixedIncomeView,
-  combineSummaryWithFixed,
-  sumFixedIncomeViews,
-  summarizePositions,
-  type Currency,
-  type FixedIncomeView,
-  type PositionView,
-} from '@/domain';
+import { summarizePositions, type Currency, type PositionView } from '@/domain';
 import { findAsset, historyService } from '@/services';
 
 import {
-  useAllFixedIncomes,
   useAllTransactions,
   usePortfolios,
   useQuotes,
@@ -41,15 +32,6 @@ export function useDashboardData() {
   const toBRL = (value: number, currency: Currency) =>
     currency === 'USD' ? value * rate : value;
 
-  const fixedIncomesQuery = useAllFixedIncomes();
-
-  const fixedViewsByPortfolio = new Map<string, FixedIncomeView[]>();
-  for (const item of fixedIncomesQuery.data ?? []) {
-    const views = fixedViewsByPortfolio.get(item.portfolioId) ?? [];
-    views.push(buildFixedIncomeView(item));
-    fixedViewsByPortfolio.set(item.portfolioId, views);
-  }
-
   const portfolios = (portfoliosQuery.data ?? []).filter(
     (p) => p.kind === 'investment',
   );
@@ -60,16 +42,10 @@ export function useDashboardData() {
       quotesQuery.data,
     );
 
-    const fixedViews = fixedViewsByPortfolio.get(portfolio.id) ?? [];
-
     return {
       portfolio,
       views,
-      fixedViews,
-      summary: combineSummaryWithFixed(
-        summarizePositions(views),
-        sumFixedIncomeViews(fixedViews),
-      ),
+      summary: summarizePositions(views),
     };
   });
 
@@ -146,35 +122,14 @@ export function useDashboardData() {
     }))
     .filter((slice) => slice.value > 0);
 
-  const fixedTotalBRL = perPortfolio.reduce(
-    (sum, { portfolio, fixedViews }) =>
-      sum +
-      fixedViews.reduce(
-        (acc, view) => acc + toBRL(view.grossValue, portfolio.currency),
-        0,
-      ),
-    0,
-  );
+  const byClass = groupSlices(allViewsBRL, ({ view }) => {
+    const assetClass = findAsset(view.ticker)?.assetClass;
+    return assetClass ? CLASS_LABELS[assetClass] : 'Outros';
+  });
 
-  const withFixedSlice = (slices: AllocationSlice[]): AllocationSlice[] =>
-    fixedTotalBRL > 0
-      ? [...slices, { label: 'Renda fixa', value: fixedTotalBRL }].sort(
-          (a, b) => b.value - a.value,
-        )
-      : slices;
-
-  const byClass = withFixedSlice(
-    groupSlices(allViewsBRL, ({ view }) => {
-      const assetClass = findAsset(view.ticker)?.assetClass;
-      return assetClass ? CLASS_LABELS[assetClass] : 'Outros';
-    }),
-  );
-
-  const bySector = withFixedSlice(
-    groupSlices(
-      allViewsBRL,
-      ({ view }) => findAsset(view.ticker)?.sector ?? 'Outros',
-    ),
+  const bySector = groupSlices(
+    allViewsBRL,
+    ({ view }) => findAsset(view.ticker)?.sector ?? 'Outros',
   );
 
   return {
@@ -186,7 +141,6 @@ export function useDashboardData() {
       portfoliosQuery.isLoading ||
       transactionsQuery.isLoading ||
       rateQuery.isLoading ||
-      fixedIncomesQuery.isLoading ||
       (tickers.length > 0 && quotesQuery.isLoading),
     isFetchingQuotes: quotesQuery.isFetching,
     quotesUpdatedAt: quotesQuery.dataUpdatedAt,

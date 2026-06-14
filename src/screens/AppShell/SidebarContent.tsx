@@ -236,12 +236,12 @@ export function SidebarContent({
 
           <SidebarNavItem
             collapsed={collapsed}
-            tooltip='Outros bens'
+            tooltip='Patrimônio'
             to='/outros-bens'
             onClick={onNavigate}
           >
             <Landmark className='size-4 shrink-0' />
-            {!collapsed && 'Outros bens'}
+            {!collapsed && 'Patrimônio'}
           </SidebarNavItem>
 
           <SidebarNavItem

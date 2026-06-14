@@ -48,9 +48,7 @@ describe('buildCompoundSchedule', () => {
       months: 2,
     });
 
-    // month 0: contribution made after close -> no interest yet
     expect(schedule.rows[0]).toMatchObject({ balance: 0, interest: 0 });
-    // month 1: the first contribution now yields 10
     expect(schedule.rows[1]).toMatchObject({ balance: 110, interest: 10 });
     expect(schedule.invested).toBe(200);
     expect(schedule.totalInterest).toBeCloseTo(10, 10);

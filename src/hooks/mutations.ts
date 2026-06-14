@@ -6,8 +6,6 @@ import {
   portfoliosService,
   targetsService,
   type AllocationTargets,
-  type NewFixedIncome,
-  type NewIncome,
   type NewPatrimonyItem,
   type NewPortfolio,
   type NewTransaction,
@@ -113,57 +111,6 @@ export function useRemovePosition() {
       ticker: string;
     }) => portfoliosService.removePosition(portfolioId, ticker),
     onSuccess: () => invalidate([queryKeys.allTransactions]),
-  });
-}
-
-export function useAddIncome() {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: (input: NewIncome) => portfoliosService.addIncome(input),
-    onSuccess: (income) => invalidate([queryKeys.incomes(income.portfolioId)]),
-  });
-}
-
-export function useRemoveIncome(portfolioId: string) {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: (id: string) => portfoliosService.removeIncome(id),
-    onSuccess: () => invalidate([queryKeys.incomes(portfolioId)]),
-  });
-}
-
-export function useAddFixedIncome() {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: (input: NewFixedIncome) =>
-      portfoliosService.addFixedIncome(input),
-    onSuccess: () => invalidate([queryKeys.allFixedIncomes]),
-  });
-}
-
-export function useRemoveFixedIncome() {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: (id: string) => portfoliosService.removeFixedIncome(id),
-    onSuccess: () => invalidate([queryKeys.allFixedIncomes]),
-  });
-}
-
-export function useUpdateFixedIncomeValue(portfolioId: string) {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: ({ id, currentValue }: { id: string; currentValue: number }) =>
-      portfoliosService.updateFixedIncomeValue(id, currentValue),
-    onSuccess: () =>
-      invalidate([
-        queryKeys.allFixedIncomes,
-        queryKeys.fixedIncomes(portfolioId),
-      ]),
   });
 }
 

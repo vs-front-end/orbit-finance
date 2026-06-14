@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 
 import type { ChartSeries } from '@/components/Charts';
-import type { Currency, PositionView } from '@/domain';
+import type { CashFlow, Currency, PositionView } from '@/domain';
+import { timeWeightedReturn } from '@/domain';
 import { historyService, quotesService } from '@/services';
 
 import { useDashboardData } from './useDashboardData';
-import { useUsdBrlRate } from './queries';
+import { useAllTransactions, useUsdBrlRate } from './queries';
 
 export type PositionMover = {
   view: PositionView;
@@ -16,6 +17,7 @@ export type PositionMover = {
 export function useStatsData(days: number) {
   const dashboard = useDashboardData();
   const rateQuery = useUsdBrlRate();
+  const transactionsQuery = useAllTransactions();
   const rate = rateQuery.data ?? 0;
 
   const historyQuery = useQuery({
@@ -84,14 +86,22 @@ export function useStatsData(days: number) {
     0,
   );
 
+  const currencyByPortfolio = new Map<string, Currency>(
+    dashboard.perPortfolio.map(({ portfolio }) => [
+      portfolio.id,
+      portfolio.currency,
+    ]),
+  );
+  const flows: CashFlow[] = (transactionsQuery.data ?? []).flatMap((tx) => {
+    const currency = currencyByPortfolio.get(tx.portfolioId);
+    if (!currency) return [];
+    const cost = tx.quantity * tx.unitPrice;
+    const signed = tx.side === 'buy' ? cost : -cost;
+    return [{ t: Date.parse(tx.executedAt), amount: toBRL(signed, currency) }];
+  });
+
   const historyPoints = consolidatedSeries[0]?.points ?? [];
-  const firstHistoryValue = historyPoints[0]?.value ?? 0;
-  const periodReturn =
-    firstHistoryValue > 0
-      ? ((dashboard.consolidated.marketValue - firstHistoryValue) /
-          firstHistoryValue) *
-        100
-      : null;
+  const periodReturn = timeWeightedReturn(historyPoints, flows);
 
   const benchmark = benchmarkQuery.data ?? { ibov: null, sp500: null };
 
@@ -117,6 +127,7 @@ export function useStatsData(days: number) {
       dashboard.isLoading ||
       historyQuery.isLoading ||
       rateQuery.isLoading ||
+      transactionsQuery.isLoading ||
       benchmarkQuery.isLoading,
   };
 }

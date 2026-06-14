@@ -50,34 +50,21 @@ export const quoteSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 
-export const incomeSchema = z.object({
-  id: z.string(),
-  portfolioId: z.string(),
-  ticker: z.string().min(1),
-  amount: z.number().positive(),
-  receivedAt: z.iso.datetime(),
-});
-
-export const fixedIncomeSchema = z
-  .object({
-    id: z.string(),
-    portfolioId: z.string(),
-    name: z.string().min(1),
-    principal: z.number().positive(),
-    currentValue: z.number().positive().optional(),
-    cdiPercent: z.number().positive(),
-    appliedAt: z.iso.datetime(),
-    maturesAt: z.iso.datetime().nullable(),
-  })
-  .transform((item) => ({
-    ...item,
-    currentValue: item.currentValue ?? item.principal,
-  }));
+export const patrimonyKindSchema = z.enum([
+  'cash',
+  'reserve',
+  'property',
+  'vehicle',
+]);
 
 export const patrimonyItemSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
+  kind: patrimonyKindSchema,
   value: z.number().nonnegative(),
+  referenceDate: z.string().nullable(),
+  cdiPercent: z.number().nullable(),
+  annualRate: z.number().nullable(),
   createdAt: z.iso.datetime(),
 });
 
@@ -91,6 +78,7 @@ export const userSchema = z.object({
 });
 
 export type Currency = z.infer<typeof currencySchema>;
+export type AssetClass = z.infer<typeof assetClassSchema>;
 export type PortfolioKind = z.infer<typeof portfolioKindSchema>;
 export type TransactionSide = z.infer<typeof transactionSideSchema>;
 export type Portfolio = z.infer<typeof portfolioSchema>;
@@ -98,8 +86,7 @@ export type Transaction = z.infer<typeof transactionSchema>;
 export type WatchItem = z.infer<typeof watchItemSchema>;
 export type Asset = z.infer<typeof assetSchema>;
 export type Quote = z.infer<typeof quoteSchema>;
-export type Income = z.infer<typeof incomeSchema>;
-export type FixedIncome = z.infer<typeof fixedIncomeSchema>;
+export type PatrimonyKind = z.infer<typeof patrimonyKindSchema>;
 export type PatrimonyItem = z.infer<typeof patrimonyItemSchema>;
 export type AuthProvider = z.infer<typeof authProviderSchema>;
 export type User = z.infer<typeof userSchema>;

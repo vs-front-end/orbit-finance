@@ -32,27 +32,6 @@ create table if not exists watch_items (
   "addedAt"     text not null
 );
 
-create table if not exists incomes (
-  id            text primary key,
-  user_id       uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  "portfolioId" text not null,
-  ticker        text not null,
-  amount        double precision not null,
-  "receivedAt"  text not null
-);
-
-create table if not exists fixed_incomes (
-  id            text primary key,
-  user_id       uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  "portfolioId" text not null,
-  name          text not null,
-  principal     double precision not null,
-  "currentValue" double precision not null,
-  "cdiPercent"  double precision not null,
-  "appliedAt"   text not null,
-  "maturesAt"   text
-);
-
 -- Catálogo de ativos que o usuário já usou (alimentado pela busca real ao
 -- registrar transações). Guarda os metadados — classe, setor, moeda — que
 -- roteiam a cotação e classificam a alocação de qualquer ticker.
@@ -83,14 +62,16 @@ create table if not exists patrimony_items (
   id        text primary key,
   user_id   uuid not null default auth.uid() references auth.users (id) on delete cascade,
   name      text not null,
+  kind      text not null default 'cash',
   value     double precision not null,
+  "referenceDate" text,
+  "cdiPercent" double precision,
+  "annualRate" double precision,
   "createdAt" text not null
 );
 
 create index if not exists transactions_portfolio_idx on transactions ("portfolioId");
 create index if not exists watch_items_portfolio_idx on watch_items ("portfolioId");
-create index if not exists incomes_portfolio_idx on incomes ("portfolioId");
-create index if not exists fixed_incomes_portfolio_idx on fixed_incomes ("portfolioId");
 create index if not exists portfolio_snapshots_date_idx on portfolio_snapshots (date);
 
 -- RLS: cada usuário só enxerga e altera as próprias linhas.
@@ -98,7 +79,7 @@ do $$
 declare
   t text;
 begin
-  foreach t in array array['portfolios', 'transactions', 'watch_items', 'incomes', 'fixed_incomes', 'portfolio_snapshots', 'assets', 'patrimony_items']
+  foreach t in array array['portfolios', 'transactions', 'watch_items', 'portfolio_snapshots', 'assets', 'patrimony_items']
   loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists owner_all on %I', t);

@@ -1,7 +1,7 @@
 # Orbit Finance
 
 Personal finance hub. **Investments** module: portfolios, positions, P/L, allocation,
-dividends, fixed income (manual value), evolution stats, and other assets outside portfolios.
+automatic dividends, fixed income (manual value), evolution stats, and other assets outside portfolios.
 **Tools**: CDB/CDI simulator, compound interest, rebalancing.
 
 ## Run
@@ -24,6 +24,7 @@ GitHub auth via Supabase. Data in Supabase. Quotes via Yahoo (Edge Function).
 | USD/BRL | AwesomeAPI |
 | CDI | BCB/SGS (CDB simulator only) |
 | Fixed income in portfolio | Manual `currentValue` |
+| Dividends / proventos | Yahoo via `quotes-us` (`dividends`), per-share × held quantity on the ex-date |
 | Benchmarks (Ibovespa, S&P 500) | Yahoo via `quotes-us` (`indexDays`) |
 
 Copy `.env.example` to `.env.local` and fill in Supabase vars.

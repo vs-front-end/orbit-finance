@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
   assetsService,
   cdiService,
+  dividendsService,
   patrimonyService,
   portfoliosService,
   quotesService,
@@ -18,11 +19,8 @@ export const queryKeys = {
   allTransactions: ['transactions'] as const,
   watchItems: (portfolioId: string) => ['watch-items', portfolioId] as const,
   quotes: (tickers: string[]) => ['quotes', ...tickers] as const,
+  dividends: (tickers: string[]) => ['dividends', ...tickers] as const,
   usdBrl: ['usd-brl'] as const,
-  incomes: (portfolioId: string) => ['incomes', portfolioId] as const,
-  fixedIncomes: (portfolioId: string) =>
-    ['fixed-incomes', portfolioId] as const,
-  allFixedIncomes: ['fixed-incomes'] as const,
   cdi: ['cdi'] as const,
   targets: ['targets'] as const,
   patrimonyItems: ['patrimony-items'] as const,
@@ -84,6 +82,18 @@ export function useQuotes(tickers: string[]) {
   });
 }
 
+export function useDividendEvents(tickers: string[]) {
+  const sorted = [...tickers].sort();
+
+  return useQuery({
+    queryKey: queryKeys.dividends(sorted),
+    queryFn: () => dividendsService.getDividends(sorted),
+    enabled: sorted.length > 0,
+    staleTime: 12 * 60 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useUsdBrlRate() {
   return useQuery({
     queryKey: queryKeys.usdBrl,
@@ -92,24 +102,11 @@ export function useUsdBrlRate() {
   });
 }
 
-export function useIncomes(portfolioId: string) {
+export function useUsdBrlSeries() {
   return useQuery({
-    queryKey: queryKeys.incomes(portfolioId),
-    queryFn: () => portfoliosService.listIncomes(portfolioId),
-  });
-}
-
-export function useFixedIncomes(portfolioId: string) {
-  return useQuery({
-    queryKey: queryKeys.fixedIncomes(portfolioId),
-    queryFn: () => portfoliosService.listFixedIncomes(portfolioId),
-  });
-}
-
-export function useAllFixedIncomes() {
-  return useQuery({
-    queryKey: queryKeys.allFixedIncomes,
-    queryFn: () => portfoliosService.listAllFixedIncomes(),
+    queryKey: ['usd-brl-series'],
+    queryFn: () => quotesService.getUsdBrlSeries(),
+    staleTime: 12 * 60 * 60 * 1000,
   });
 }
 
@@ -118,6 +115,15 @@ export function useCdiAnnual() {
     queryKey: queryKeys.cdi,
     queryFn: () => cdiService.getCdiAnnual(),
     staleTime: Infinity,
+  });
+}
+
+export function useCdiSeries(since: string | null) {
+  return useQuery({
+    queryKey: ['cdi-series', since],
+    queryFn: () => cdiService.getCdiSeries(since ?? ''),
+    enabled: since !== null,
+    staleTime: 12 * 60 * 60 * 1000,
   });
 }
 

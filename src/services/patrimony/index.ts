@@ -1,18 +1,23 @@
 import { z } from 'zod';
 
-import { patrimonyItemSchema, type PatrimonyItem } from '@/domain';
+import {
+  patrimonyItemSchema,
+  type PatrimonyItem,
+  type PatrimonyKind,
+} from '@/domain';
 
 import { supabase } from '../supabase';
 
 export type NewPatrimonyItem = {
   name: string;
+  kind: PatrimonyKind;
   value: number;
+  referenceDate: string | null;
+  cdiPercent: number | null;
+  annualRate: number | null;
 };
 
-export type UpdatePatrimonyItem = {
-  name: string;
-  value: number;
-};
+export type UpdatePatrimonyItem = NewPatrimonyItem;
 
 export type PatrimonyService = {
   list: () => Promise<PatrimonyItem[]>;

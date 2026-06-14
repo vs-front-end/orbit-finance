@@ -1,71 +1,51 @@
-import { useState } from 'react';
-
 import {
-  Button,
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
+  Skeleton,
 } from '@stellar-ui-kit/web';
 
-import { Plus, Trash2 } from 'lucide-react';
-
 import type { Portfolio } from '@/domain';
-import { useIncomes, useRemoveIncome } from '@/hooks';
+import { usePortfolioDividends } from '@/hooks';
 import { formatDate, formatMoney, formatPercent } from '@/utils';
 
 import { Table, TCell, THeadCell, TRow } from './Table';
 
-import { AddIncomeDialog } from './AddIncomeDialog';
-
 type IncomesTabProps = {
   portfolio: Portfolio;
-  tickers: string[];
   investedValue: number;
 };
 
-export function IncomesTab({
-  portfolio,
-  tickers,
-  investedValue,
-}: IncomesTabProps) {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const { data } = useIncomes(portfolio.id);
-  const removeIncome = useRemoveIncome(portfolio.id);
-
-  const incomes = [...(data ?? [])].sort((a, b) =>
-    b.receivedAt.localeCompare(a.receivedAt),
+export function IncomesTab({ portfolio, investedValue }: IncomesTabProps) {
+  const { received, total, tax, isLoading } = usePortfolioDividends(
+    portfolio.id,
   );
-  const total = incomes.reduce((sum, income) => sum + income.amount, 0);
+
+  if (isLoading) {
+    return <Skeleton className='h-64 w-full' />;
+  }
+
   const yieldOnCost = investedValue > 0 ? (total / investedValue) * 100 : 0;
 
   return (
     <div className='flex flex-col gap-3'>
-      <div className='flex flex-wrap items-center justify-between gap-2'>
-        <span className='text-xs text-muted'>
-          Total recebido:{' '}
-          <span className='font-medium text-success-text'>
-            {formatMoney(total, portfolio.currency)}
-          </span>{' '}
-          · Yield on cost: {formatPercent(yieldOnCost, false)}
+      <span className='text-xs text-muted'>
+        Recebido (líq.):{' '}
+        <span className='font-medium text-success-text'>
+          {formatMoney(total, portfolio.currency)}
         </span>
-        <Button
-          size='sm'
-          onClick={() => setDialogOpen(true)}
-          disabled={tickers.length === 0}
-        >
-          <Plus />
-          <span className='hidden sm:inline'>Novo provento</span>
-        </Button>
-      </div>
+        {tax > 0 && <> · IR: {formatMoney(tax, portfolio.currency)}</>} · Yield
+        on cost: {formatPercent(yieldOnCost, false)}
+      </span>
 
-      {incomes.length === 0 ? (
+      {received.length === 0 ? (
         <Empty>
           <EmptyHeader>
             <EmptyTitle>Sem proventos</EmptyTitle>
             <EmptyDescription>
-              Registre dividendos, JCP e rendimentos recebidos para acompanhar o
-              yield das posições.
+              Os dividendos e rendimentos das suas posições aparecem aqui
+              automaticamente, conforme o histórico de cada ativo.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -73,44 +53,39 @@ export function IncomesTab({
         <Table>
           <thead>
             <tr>
-              <THeadCell>Data</THeadCell>
+              <THeadCell>Data-com</THeadCell>
               <THeadCell>Ativo</THeadCell>
               <THeadCell className='text-right'>Valor</THeadCell>
-              <THeadCell />
             </tr>
           </thead>
           <tbody>
-            {incomes.map((income) => (
-              <TRow key={income.id}>
+            {received.map((dividend) => (
+              <TRow key={`${dividend.ticker}-${dividend.exDate}`}>
                 <TCell className='text-muted'>
-                  {formatDate(income.receivedAt)}
+                  {formatDate(`${dividend.exDate}T12:00:00`)}
                 </TCell>
-                <TCell className='font-medium'>{income.ticker}</TCell>
+                <TCell>
+                  <div className='flex flex-col'>
+                    <span className='font-medium'>{dividend.ticker}</span>
+                    <span className='text-xs text-muted'>
+                      {dividend.quantity} ×{' '}
+                      {formatMoney(dividend.amountPerShare, portfolio.currency)}
+                      {dividend.tax > 0 && (
+                        <>
+                          {' '}
+                          · IR {formatMoney(dividend.tax, portfolio.currency)}
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </TCell>
                 <TCell className='text-right font-medium text-success-text'>
-                  {formatMoney(income.amount, portfolio.currency)}
-                </TCell>
-                <TCell className='w-10 text-right'>
-                  <Button
-                    variant='ghost'
-                    size='icon-sm'
-                    aria-label='Excluir provento'
-                    onClick={() => removeIncome.mutate(income.id)}
-                  >
-                    <Trash2 className='text-error-text' />
-                  </Button>
+                  {formatMoney(dividend.received, portfolio.currency)}
                 </TCell>
               </TRow>
             ))}
           </tbody>
         </Table>
-      )}
-
-      {dialogOpen && (
-        <AddIncomeDialog
-          portfolio={portfolio}
-          tickers={tickers}
-          onClose={() => setDialogOpen(false)}
-        />
       )}
     </div>
   );

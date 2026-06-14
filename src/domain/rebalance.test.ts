@@ -39,7 +39,6 @@ describe('buildRebalancePlan', () => {
     );
 
     expect(plan.plannedTotal).toBe(12000);
-    // target value is a share of the planned total, not the current one
     expect(plan.rows[0].targetValue).toBeCloseTo(7200, 6);
     expect(plan.rows[0].diff).toBeCloseTo(2200, 6);
     expect(plan.rows[1].targetValue).toBeCloseTo(4800, 6);

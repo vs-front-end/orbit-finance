@@ -18,12 +18,15 @@ import { formatMoney, formatPercent } from '@/utils';
 
 import { PLValue, StatCard } from '@/components';
 
+import { DividendsCard } from './DividendsCard';
 import { TopMoversCard } from './TopMoversCard';
 
 const PERIODS = [
   { value: '30', label: '1M' },
   { value: '90', label: '3M' },
   { value: '180', label: '6M' },
+  { value: '365', label: '1A' },
+  { value: '36500', label: 'Total' },
 ];
 
 function formatCompact(value: number): string {
@@ -208,6 +211,8 @@ export function Stats() {
           </CardContent>
         </Card>
       )}
+
+      <DividendsCard />
 
       <div className='grid gap-3 sm:gap-4 md:grid-cols-2'>
         <TopMoversCard title='Maiores ganhos' movers={gainers} />

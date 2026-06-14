@@ -10,6 +10,9 @@ const config: Config = {
   presets: [stellarPreset],
   theme: {
     extend: {
+      screens: {
+        xs: '376px',
+      },
       colors: {
         'chart-1': 'var(--color-chart-1)',
         'chart-2': 'var(--color-chart-2)',

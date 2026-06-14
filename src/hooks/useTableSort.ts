@@ -4,7 +4,6 @@ export type SortDir = 'asc' | 'desc';
 
 type Accessors<T> = Record<string, (row: T) => number | string>;
 
-// Ordenação de tabela por coluna: 1º clique desc, 2º asc, alterna depois.
 export function useTableSort<T>(
   rows: T[],
   accessors: Accessors<T>,
