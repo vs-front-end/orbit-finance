@@ -4,6 +4,8 @@ Personal finance hub. **Investments** module: portfolios, positions, P/L, alloca
 automatic dividends, fixed income (manual value), evolution stats, and other assets outside portfolios.
 **Tools**: CDB/CDI simulator, compound interest, rebalancing.
 
+UI built with [Stellar UI Kit](https://stellar.vsdev.app).
+
 ## Run
 
 ```bash
