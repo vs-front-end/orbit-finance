@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/config', () => ({
+  env: {
+    VITE_BCB_SGS_URL: 'https://api.bcb.gov.br/dados/serie',
+  },
+}));
+
 import { getBcbCdiSeries } from './bcb';
 
 const latestRow = { data: '11/06/2026', valor: '0.053400' };
