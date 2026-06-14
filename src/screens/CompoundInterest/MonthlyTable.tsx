@@ -1,12 +1,5 @@
+import type { CompoundRow } from '@/domain';
 import { formatMoney } from '@/utils';
-
-export type CompoundRow = {
-  month: number;
-  interest: number;
-  invested: number;
-  totalInterest: number;
-  balance: number;
-};
 
 export function MonthlyTable({ rows }: { rows: CompoundRow[] }) {
   return (

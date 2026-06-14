@@ -10,12 +10,13 @@ import {
 
 import { Plus } from 'lucide-react';
 
-import type { Portfolio, Transaction, TransactionSide } from '@/domain';
 import {
   combineSummaryWithFixed,
-  useFixedIncomeViews,
-  usePortfolioPositions,
-} from '@/hooks';
+  type Portfolio,
+  type Transaction,
+  type TransactionSide,
+} from '@/domain';
+import { useFixedIncomeViews, usePortfolioPositions } from '@/hooks';
 import { formatMoney } from '@/utils';
 
 import { PLValue, RefreshIndicator, StatCard } from '@/components';

@@ -15,12 +15,13 @@ import {
   Text,
 } from '@stellar-ui-kit/web';
 
+import { buildCompoundSchedule, toMonthlyRate } from '@/domain';
 import { LineChart } from '@/components/Charts';
 import { formatMoney, parseDecimal } from '@/utils';
 
 import { MoneyInput, StatCard } from '@/components';
 
-import { MonthlyTable, type CompoundRow } from './MonthlyTable';
+import { MonthlyTable } from './MonthlyTable';
 
 const MAX_MONTHS = 1200;
 
@@ -44,23 +45,17 @@ export function CompoundInterest() {
     Math.round(parseDecimal(period) * (periodUnit === 'years' ? 12 : 1)),
   );
   const ratePercent = parseDecimal(rate) / 100;
-  const monthlyRate =
-    ratePeriod === 'yearly' ? (1 + ratePercent) ** (1 / 12) - 1 : ratePercent;
+  const monthlyRate = toMonthlyRate(
+    ratePercent,
+    ratePeriod === 'yearly' ? 'yearly' : 'monthly',
+  );
 
-  // Convenção Investidor Sardinha: a linha do mês fecha com os juros do mês;
-  // o aporte entra depois do fechamento (rende a partir do mês seguinte).
-  const rows: CompoundRow[] = [];
-  let balance = initialAmount ?? 0;
-  let invested = initialAmount ?? 0;
-  let totalInterest = 0;
-  for (let month = 0; month < months; month++) {
-    const interest = balance * monthlyRate;
-    totalInterest += interest;
-    balance += interest;
-    rows.push({ month, interest, invested, totalInterest, balance });
-    balance += monthlyAmount ?? 0;
-    invested += monthlyAmount ?? 0;
-  }
+  const { rows, balance, invested, totalInterest } = buildCompoundSchedule({
+    initialAmount: initialAmount ?? 0,
+    monthlyAmount: monthlyAmount ?? 0,
+    monthlyRate,
+    months,
+  });
 
   const hasResult = rows.length > 0 && balance > 0;
 

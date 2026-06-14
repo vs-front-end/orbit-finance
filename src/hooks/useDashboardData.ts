@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import type { AllocationSlice } from '@/components/Charts';
 import {
   buildFixedIncomeView,
+  combineSummaryWithFixed,
+  sumFixedIncomeViews,
   summarizePositions,
   type Currency,
   type FixedIncomeView,
@@ -17,10 +19,6 @@ import {
   useQuotes,
   useUsdBrlRate,
 } from './queries';
-import {
-  combineSummaryWithFixed,
-  sumFixedIncomeViews,
-} from './useFixedIncomeViews';
 import { buildPositionViews } from './usePositionViews';
 
 const CLASS_LABELS: Record<string, string> = {

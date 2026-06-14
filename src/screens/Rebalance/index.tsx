@@ -14,6 +14,7 @@ import {
 
 import { Check } from 'lucide-react';
 
+import { buildRebalancePlan } from '@/domain';
 import { DonutChart } from '@/components/Charts';
 import { useDashboardData, useSetTargets, useTargets } from '@/hooks';
 import {
@@ -60,26 +61,19 @@ export function Rebalance() {
   );
   const effectiveDraft = draft ?? savedDraft;
 
-  const currentTotal = rows.reduce((sum, row) => sum + row.valueBRL, 0);
-  const plannedTotal = currentTotal + (extraContribution ?? 0);
-  const targetSum = rows.reduce(
-    (sum, { portfolio }) =>
-      sum + parseDecimal(effectiveDraft[portfolio.id] ?? ''),
-    0,
-  );
-
-  const computed = rows.map(({ portfolio, valueBRL }) => {
-    const targetPercent = parseDecimal(effectiveDraft[portfolio.id] ?? '');
-    const targetValue = (targetPercent / 100) * plannedTotal;
-    return {
+  const {
+    currentTotal,
+    plannedTotal,
+    targetSum,
+    rows: computed,
+  } = buildRebalancePlan(
+    rows.map(({ portfolio, valueBRL }) => ({
       portfolio,
       valueBRL,
-      currentPercent: currentTotal > 0 ? (valueBRL / currentTotal) * 100 : 0,
-      targetPercent,
-      targetValue,
-      diff: targetValue - valueBRL,
-    };
-  });
+      targetPercent: parseDecimal(effectiveDraft[portfolio.id] ?? ''),
+    })),
+    extraContribution ?? 0,
+  );
 
   const hasTargets = targetSum > 0;
 
