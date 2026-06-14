@@ -5,12 +5,21 @@ import { getBcbCdiSeries } from './bcb';
 const latestRow = { data: '11/06/2026', valor: '0.053400' };
 
 function mockFetch(
-  handlers: Record<string, () => Promise<{ ok: boolean; status?: number; json: () => Promise<unknown> }>>,
+  handlers: Record<
+    string,
+    () => Promise<{
+      ok: boolean;
+      status?: number;
+      json: () => Promise<unknown>;
+    }>
+  >,
 ) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string) => {
-      const handler = Object.entries(handlers).find(([key]) => url.includes(key));
+      const handler = Object.entries(handlers).find(([key]) =>
+        url.includes(key),
+      );
       if (!handler) throw new Error(`unexpected fetch: ${url}`);
       return handler[1]();
     }),

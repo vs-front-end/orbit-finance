@@ -31,9 +31,7 @@ function parseDaily(valor: string): number {
   return daily;
 }
 
-function parseBcbSeries(
-  rows: z.infer<typeof seriesSchema>,
-): CdiRatePoint[] {
+function parseBcbSeries(rows: z.infer<typeof seriesSchema>): CdiRatePoint[] {
   return rows.map((row) => ({
     date: fromBcbDate(row.data),
     daily: parseDaily(row.valor),
