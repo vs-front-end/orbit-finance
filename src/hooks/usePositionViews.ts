@@ -33,9 +33,7 @@ export function usePortfolioPositions(portfolioId: string) {
     views,
     summary: summarizePositions(views),
     transactions,
-    isLoading:
-      transactionsQuery.isLoading ||
-      (tickers.length > 0 && quotesQuery.isLoading),
+    isLoading: transactionsQuery.isLoading,
     isFetchingQuotes: quotesQuery.isFetching,
     quotesUpdatedAt: quotesQuery.dataUpdatedAt,
     refetchQuotes: quotesQuery.refetch,

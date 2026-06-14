@@ -70,4 +70,4 @@ export const assetsService: AssetsService = {
   },
 };
 
-export { findAsset, ASSET_CATALOG, type AssetHit } from './catalog';
+export { findAsset, type AssetHit } from './catalog';

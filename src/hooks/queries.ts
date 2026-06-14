@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import {
   assetsService,
@@ -80,6 +80,7 @@ export function useQuotes(tickers: string[]) {
     enabled: sorted.length > 0,
     staleTime: 300_000,
     refetchOnWindowFocus: true,
+    placeholderData: keepPreviousData,
   });
 }
 

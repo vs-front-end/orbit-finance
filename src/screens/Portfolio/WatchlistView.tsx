@@ -1,15 +1,12 @@
-import { useState } from 'react';
-
 import {
   Button,
-  Combobox,
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
 } from '@stellar-ui-kit/web';
 
-import { Plus, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 import type { Portfolio } from '@/domain';
 import {
@@ -18,17 +15,17 @@ import {
   useRemoveWatchItem,
   useWatchItems,
 } from '@/hooks';
-import { ASSET_CATALOG, findAsset } from '@/services';
+import { assetsService, findAsset, type AssetHit } from '@/services';
 import { formatPrice } from '@/utils';
 
 import { PLValue, RefreshIndicator } from '@/components';
 
+import { AssetSearch } from './AssetSearch';
 import { PortfolioActions } from './PortfolioActions';
 import { PortfolioHeader } from './PortfolioHeader';
 import { Table, TCell, THeadCell, TRow } from './Table';
 
 export function WatchlistView({ portfolio }: { portfolio: Portfolio }) {
-  const [ticker, setTicker] = useState('');
   const { data: items } = useWatchItems(portfolio.id);
   const watchItems = items ?? [];
   const quotesQuery = useQuotes(watchItems.map((item) => item.ticker));
@@ -38,20 +35,11 @@ export function WatchlistView({ portfolio }: { portfolio: Portfolio }) {
   const quoteByTicker = new Map(
     (quotesQuery.data ?? []).map((quote) => [quote.ticker, quote]),
   );
-  const existing = new Set(watchItems.map((item) => item.ticker));
-  const options = ASSET_CATALOG.filter(
-    (asset) => !existing.has(asset.ticker),
-  ).map((asset) => ({
-    value: asset.ticker,
-    label: `${asset.ticker} · ${asset.name}`,
-  }));
 
-  const handleAdd = () => {
-    if (!ticker) return;
-    addWatchItem.mutate(
-      { portfolioId: portfolio.id, ticker: ticker.toUpperCase() },
-      { onSuccess: () => setTicker('') },
-    );
+  const handleSelect = (hit: AssetHit) => {
+    if (watchItems.some((item) => item.ticker === hit.ticker)) return;
+    void assetsService.register(hit).catch(() => {});
+    addWatchItem.mutate({ portfolioId: portfolio.id, ticker: hit.ticker });
   };
 
   return (
@@ -70,26 +58,12 @@ export function WatchlistView({ portfolio }: { portfolio: Portfolio }) {
         }
       />
 
-      <div className='flex items-center gap-2'>
-        <Combobox
-          options={options}
-          value={ticker}
-          onValueChange={(value) => setTicker(value.toUpperCase())}
-          placeholder='Adicionar ativo...'
-          searchPlaceholder='Buscar ticker ou nome...'
-          emptyText='Nenhum ativo encontrado.'
-          className='w-full min-w-0 overflow-hidden sm:w-72'
+      <div className='w-full min-w-0 sm:w-72'>
+        <AssetSearch
+          currency={portfolio.currency}
+          value=''
+          onSelect={handleSelect}
         />
-        <Button
-          size='sm'
-          className='shrink-0'
-          aria-label='Adicionar ativo'
-          onClick={handleAdd}
-          disabled={!ticker || addWatchItem.isPending}
-        >
-          <Plus />
-          <span className='hidden sm:inline'>Adicionar</span>
-        </Button>
       </div>
 
       {watchItems.length === 0 ? (

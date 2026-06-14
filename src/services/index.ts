@@ -2,7 +2,6 @@ export { authService, type AuthService } from './auth';
 export {
   assetsService,
   findAsset,
-  ASSET_CATALOG,
   type AssetsService,
   type AssetHit,
 } from './assets';

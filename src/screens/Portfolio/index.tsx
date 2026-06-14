@@ -9,6 +9,7 @@ import {
 import { usePortfolio } from '@/hooks';
 
 import { InvestmentView } from './InvestmentView';
+import { PortfolioSkeleton } from './PortfolioSkeleton';
 import { WatchlistView } from './WatchlistView';
 
 export function PortfolioScreen({ portfolioId }: { portfolioId: string }) {
@@ -16,10 +17,9 @@ export function PortfolioScreen({ portfolioId }: { portfolioId: string }) {
 
   if (isLoading) {
     return (
-      <div className='flex flex-col gap-6'>
+      <div className='flex flex-col gap-4 sm:gap-5'>
         <Skeleton className='h-10 w-64' />
-        <Skeleton className='h-24 w-full' />
-        <Skeleton className='h-64 w-full' />
+        <PortfolioSkeleton />
       </div>
     );
   }

@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import {
   Button,
-  Skeleton,
   Tabs,
   TabsContent,
   TabsList,
@@ -26,6 +25,7 @@ import { FixedIncomeTab } from './FixedIncomeTab';
 import { IncomesTab } from './IncomesTab';
 import { PortfolioActions } from './PortfolioActions';
 import { PortfolioHeader } from './PortfolioHeader';
+import { PortfolioSkeleton } from './PortfolioSkeleton';
 import { PositionsTable } from './PositionsTable';
 import { TransactionsTable } from './TransactionsTable';
 
@@ -74,7 +74,7 @@ export function InvestmentView({ portfolio }: { portfolio: Portfolio }) {
       />
 
       {isLoading ? (
-        <Skeleton className='h-96 w-full' />
+        <PortfolioSkeleton />
       ) : (
         <>
           <div className='grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6'>

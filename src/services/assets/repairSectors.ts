@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { assetSchema, type Asset } from '@/domain';
 
 import { supabase } from '../supabase';
-import { getCatalogSector, upsertDynamicAsset } from './catalog';
+import { upsertDynamicAsset } from './catalog';
 
 const enrichSchema = z.array(
   z.object({
@@ -30,29 +30,19 @@ export async function repairAssetSectors(): Promise<boolean> {
 
   const updates = new Map<string, string>();
 
-  for (const asset of outros) {
-    const catalogSector = getCatalogSector(asset.ticker);
-    if (catalogSector && catalogSector !== 'Outros') {
-      updates.set(asset.ticker, catalogSector);
-    }
-  }
-
-  const pending = outros.filter((asset) => !updates.has(asset.ticker));
-  if (pending.length > 0) {
-    const { data: enriched, error: enrichError } =
-      await supabase.functions.invoke('quotes-us', {
-        body: {
-          enrichSectors: pending.map((asset) => ({
-            ticker: asset.ticker,
-            symbol: yahooSymbol(asset),
-            assetClass: asset.assetClass,
-          })),
-        },
-      });
-    if (!enrichError) {
-      for (const row of enrichSchema.parse(enriched)) {
-        if (row.sector !== 'Outros') updates.set(row.ticker, row.sector);
-      }
+  const { data: enriched, error: enrichError } =
+    await supabase.functions.invoke('quotes-us', {
+      body: {
+        enrichSectors: outros.map((asset) => ({
+          ticker: asset.ticker,
+          symbol: yahooSymbol(asset),
+          assetClass: asset.assetClass,
+        })),
+      },
+    });
+  if (!enrichError) {
+    for (const row of enrichSchema.parse(enriched)) {
+      if (row.sector !== 'Outros') updates.set(row.ticker, row.sector);
     }
   }
 
