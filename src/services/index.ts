@@ -11,7 +11,6 @@ export {
   type NewPortfolio,
   type NewTransaction,
   type UpdateTransaction,
-  type NewFixedIncome,
 } from './portfolios';
 export { cdiService, type CdiService } from './cdi';
 export {
