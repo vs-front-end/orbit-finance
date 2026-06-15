@@ -59,8 +59,16 @@ export function useDashboardData() {
     const flag = `orbit.snapshot.${new Date().toISOString().slice(0, 10)}`;
     if (localStorage.getItem(flag)) return;
 
-    const entries = perPortfolio
-      .filter(({ summary }) => summary.marketValue > 0)
+    const positioned = perPortfolio.filter(({ views }) => views.length > 0);
+    const allQuotesReady = positioned.every(({ views }) =>
+      views.every((view) => view.quote !== null),
+    );
+
+    const entries = positioned
+      .filter(
+        ({ summary, views }) =>
+          summary.marketValue > 0 && views.every((view) => view.quote !== null),
+      )
       .map(({ portfolio, summary }) => ({
         portfolioId: portfolio.id,
         value: summary.marketValue,
@@ -68,7 +76,7 @@ export function useDashboardData() {
       }));
     if (entries.length === 0) return;
 
-    localStorage.setItem(flag, '1');
+    if (allQuotesReady) localStorage.setItem(flag, '1');
     historyService
       .recordSnapshot(entries)
       .catch(() => localStorage.removeItem(flag));

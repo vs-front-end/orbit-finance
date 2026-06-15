@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppSimuladorCdbRouteImport } from './routes/_app.simulador-cdb'
+import { Route as AppRelatoriosRouteImport } from './routes/_app.relatorios'
 import { Route as AppRebalanceamentoRouteImport } from './routes/_app.rebalanceamento'
 import { Route as AppOutrosBensRouteImport } from './routes/_app.outros-bens'
 import { Route as AppJurosCompostosRouteImport } from './routes/_app.juros-compostos'
@@ -36,6 +37,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppSimuladorCdbRoute = AppSimuladorCdbRouteImport.update({
   id: '/simulador-cdb',
   path: '/simulador-cdb',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRebalanceamentoRoute = AppRebalanceamentoRouteImport.update({
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/juros-compostos': typeof AppJurosCompostosRoute
   '/outros-bens': typeof AppOutrosBensRoute
   '/rebalanceamento': typeof AppRebalanceamentoRoute
+  '/relatorios': typeof AppRelatoriosRoute
   '/simulador-cdb': typeof AppSimuladorCdbRoute
   '/carteiras/$portfolioId': typeof AppCarteirasPortfolioIdRoute
 }
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/juros-compostos': typeof AppJurosCompostosRoute
   '/outros-bens': typeof AppOutrosBensRoute
   '/rebalanceamento': typeof AppRebalanceamentoRoute
+  '/relatorios': typeof AppRelatoriosRoute
   '/simulador-cdb': typeof AppSimuladorCdbRoute
   '/': typeof AppIndexRoute
   '/carteiras/$portfolioId': typeof AppCarteirasPortfolioIdRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/_app/juros-compostos': typeof AppJurosCompostosRoute
   '/_app/outros-bens': typeof AppOutrosBensRoute
   '/_app/rebalanceamento': typeof AppRebalanceamentoRoute
+  '/_app/relatorios': typeof AppRelatoriosRoute
   '/_app/simulador-cdb': typeof AppSimuladorCdbRoute
   '/_app/': typeof AppIndexRoute
   '/_app/carteiras/$portfolioId': typeof AppCarteirasPortfolioIdRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/juros-compostos'
     | '/outros-bens'
     | '/rebalanceamento'
+    | '/relatorios'
     | '/simulador-cdb'
     | '/carteiras/$portfolioId'
   fileRoutesByTo: FileRoutesByTo
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
     | '/juros-compostos'
     | '/outros-bens'
     | '/rebalanceamento'
+    | '/relatorios'
     | '/simulador-cdb'
     | '/'
     | '/carteiras/$portfolioId'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/_app/juros-compostos'
     | '/_app/outros-bens'
     | '/_app/rebalanceamento'
+    | '/_app/relatorios'
     | '/_app/simulador-cdb'
     | '/_app/'
     | '/_app/carteiras/$portfolioId'
@@ -163,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/simulador-cdb'
       fullPath: '/simulador-cdb'
       preLoaderRoute: typeof AppSimuladorCdbRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/relatorios': {
+      id: '/_app/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof AppRelatoriosRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/rebalanceamento': {
@@ -208,6 +227,7 @@ interface AppRouteChildren {
   AppJurosCompostosRoute: typeof AppJurosCompostosRoute
   AppOutrosBensRoute: typeof AppOutrosBensRoute
   AppRebalanceamentoRoute: typeof AppRebalanceamentoRoute
+  AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppSimuladorCdbRoute: typeof AppSimuladorCdbRoute
   AppIndexRoute: typeof AppIndexRoute
   AppCarteirasPortfolioIdRoute: typeof AppCarteirasPortfolioIdRoute
@@ -218,6 +238,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppJurosCompostosRoute: AppJurosCompostosRoute,
   AppOutrosBensRoute: AppOutrosBensRoute,
   AppRebalanceamentoRoute: AppRebalanceamentoRoute,
+  AppRelatoriosRoute: AppRelatoriosRoute,
   AppSimuladorCdbRoute: AppSimuladorCdbRoute,
   AppIndexRoute: AppIndexRoute,
   AppCarteirasPortfolioIdRoute: AppCarteirasPortfolioIdRoute,

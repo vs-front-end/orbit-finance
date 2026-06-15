@@ -7,4 +7,5 @@ export * from './usePatrimony';
 export * from './useDividends';
 export * from './useDashboardData';
 export * from './useStatsData';
+export * from './useReportData';
 export * from './useSidebarCollapsed';

@@ -13,7 +13,6 @@ import { formatMoney } from '@/utils';
 import { PLValue, RefreshIndicator, StatCard } from '@/components';
 
 import { AllocationCard } from './AllocationCard';
-import { DividendsSummaryCard } from './DividendsSummaryCard';
 import { PortfolioCard } from './PortfolioCard';
 
 export function Dashboard() {
@@ -35,8 +34,8 @@ export function Dashboard() {
     return (
       <div className='flex flex-col gap-3 sm:gap-4'>
         <Skeleton className='h-10 w-64' />
-        <div className='grid grid-cols-2 gap-3 lg:grid-cols-5'>
-          {Array.from({ length: 5 }, (_, i) => (
+        <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
+          {Array.from({ length: 4 }, (_, i) => (
             <Skeleton key={i} className='h-24 w-full' />
           ))}
         </div>
@@ -90,14 +89,15 @@ export function Dashboard() {
         >
           {formatMoney(patrimonyTotal, 'BRL')}
         </StatCard>
-        <StatCard label='Investido'>
+        <StatCard label='Total investido'>
           {formatMoney(consolidated.investedValue, 'BRL')}
         </StatCard>
-        <StatCard label='Ganhos' hint='Posições no positivo'>
-          <PLValue value={consolidated.gains} currency='BRL' />
-        </StatCard>
-        <StatCard label='Perdas' hint='Posições no negativo'>
-          <PLValue value={consolidated.losses} currency='BRL' />
+        <StatCard label='Pos. abertas'>
+          <PLValue
+            value={consolidated.netPL}
+            currency='BRL'
+            percent={consolidated.netPLPercent}
+          />
         </StatCard>
         <StatCard label='P/L diário'>
           <PLValue
@@ -106,14 +106,17 @@ export function Dashboard() {
             percent={consolidated.dailyPLPercent}
           />
         </StatCard>
-        <StatCard label='P/L líquido'>
-          <PLValue
-            value={consolidated.netPL}
-            currency='BRL'
-            percent={consolidated.netPLPercent}
+      </div>
+
+      <div className='grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4'>
+        {perPortfolio.map(({ portfolio, summary, views }) => (
+          <PortfolioCard
+            key={portfolio.id}
+            portfolio={portfolio}
+            summary={summary}
+            positionCount={views.length}
           />
-        </StatCard>
-        <DividendsSummaryCard />
+        ))}
       </div>
 
       <div className='grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3'>
@@ -129,17 +132,6 @@ export function Dashboard() {
           title='Alocação por setor'
           slices={allocations.bySector}
         />
-      </div>
-
-      <div className='grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4'>
-        {perPortfolio.map(({ portfolio, summary, views }) => (
-          <PortfolioCard
-            key={portfolio.id}
-            portfolio={portfolio}
-            summary={summary}
-            positionCount={views.length}
-          />
-        ))}
       </div>
     </div>
   );

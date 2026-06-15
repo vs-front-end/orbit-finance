@@ -13,7 +13,7 @@ type TopMoversCardProps = {
 
 export function TopMoversCard({ title, movers }: TopMoversCardProps) {
   const maxPercent = Math.max(
-    ...movers.map((m) => Math.abs(m.view.netPLPercent)),
+    ...movers.map((mover) => Math.abs(mover.view.netPLPercent)),
     1,
   );
 

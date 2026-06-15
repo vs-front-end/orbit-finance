@@ -42,19 +42,20 @@ export function PortfolioCard({
             {formatMoney(summary.marketValue, portfolio.currency)}
           </span>
           <div className='flex items-center justify-between gap-2 text-sm'>
-            <span className='text-muted'>P/L diário</span>
-            <PLValue
-              value={summary.dailyPL}
-              currency={portfolio.currency}
-              className='text-sm'
-            />
-          </div>
-          <div className='flex items-center justify-between gap-2 text-sm'>
-            <span className='text-muted'>P/L líquido</span>
+            <span className='text-muted'>Pos. abertas</span>
             <PLValue
               value={summary.netPL}
               currency={portfolio.currency}
               percent={summary.netPLPercent}
+              className='text-sm'
+            />
+          </div>
+          <div className='flex items-center justify-between gap-2 text-sm'>
+            <span className='text-muted'>P/L diário</span>
+            <PLValue
+              value={summary.dailyPL}
+              currency={portfolio.currency}
+              percent={summary.dailyPLPercent}
               className='text-sm'
             />
           </div>

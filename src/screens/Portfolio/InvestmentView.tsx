@@ -72,23 +72,23 @@ export function InvestmentView({ portfolio }: { portfolio: Portfolio }) {
       ) : (
         <>
           <div className='grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6'>
+            <StatCard label='Total investido'>
+              {formatMoney(summary.investedValue, portfolio.currency)}
+            </StatCard>
             <StatCard label='Valor de mercado'>
               {formatMoney(summary.marketValue, portfolio.currency)}
             </StatCard>
-            <StatCard label='Investido'>
-              {formatMoney(summary.investedValue, portfolio.currency)}
+            <StatCard label='Pos. abertas'>
+              <PLValue value={summary.netPL} currency={portfolio.currency} />
             </StatCard>
-            <StatCard label='P/L diário %'>
-              <PLValue value={summary.dailyPLPercent} />
+            <StatCard label='Pos. abertas %'>
+              <PLValue value={summary.netPLPercent} />
             </StatCard>
             <StatCard label='P/L diário'>
               <PLValue value={summary.dailyPL} currency={portfolio.currency} />
             </StatCard>
-            <StatCard label='P/L líquido %'>
-              <PLValue value={summary.netPLPercent} />
-            </StatCard>
-            <StatCard label='P/L líquido'>
-              <PLValue value={summary.netPL} currency={portfolio.currency} />
+            <StatCard label='P/L diário %'>
+              <PLValue value={summary.dailyPLPercent} />
             </StatCard>
           </div>
 

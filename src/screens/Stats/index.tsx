@@ -18,9 +18,6 @@ import { formatMoney, formatPercent } from '@/utils';
 
 import { PLValue, StatCard } from '@/components';
 
-import { DividendsCard } from './DividendsCard';
-import { TopMoversCard } from './TopMoversCard';
-
 const PERIODS = [
   { value: '30', label: '1M' },
   { value: '90', label: '3M' },
@@ -55,10 +52,6 @@ export function Stats() {
     benchmarkIbov,
     benchmarkSp500,
     hasHistory,
-    gainers,
-    losers,
-    best,
-    worst,
     isLoading,
   } = useStatsData(Number(period));
 
@@ -99,38 +92,15 @@ export function Stats() {
       </header>
 
       <div className='flex flex-col gap-3 sm:gap-4'>
-        <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4'>
+        <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3'>
+          <StatCard label='Patrimônio'>
+            {formatMoney(consolidated.marketValue, 'BRL')}
+          </StatCard>
           <StatCard label='Total investido'>
             {formatMoney(investedBRL, 'BRL')}
           </StatCard>
           <StatCard label='Retorno total'>
             <PLValue value={totalReturnPercent} />
-          </StatCard>
-          <StatCard
-            label='Melhor posição'
-            hint={best ? best.portfolioName : undefined}
-          >
-            {best ? (
-              <span className='flex items-baseline gap-2'>
-                {best.view.ticker}
-                <PLValue value={best.view.netPLPercent} className='text-sm' />
-              </span>
-            ) : (
-              '-'
-            )}
-          </StatCard>
-          <StatCard
-            label='Pior posição'
-            hint={worst ? worst.portfolioName : undefined}
-          >
-            {worst ? (
-              <span className='flex items-baseline gap-2'>
-                {worst.view.ticker}
-                <PLValue value={worst.view.netPLPercent} className='text-sm' />
-              </span>
-            ) : (
-              '-'
-            )}
           </StatCard>
         </div>
 
@@ -211,13 +181,6 @@ export function Stats() {
           </CardContent>
         </Card>
       )}
-
-      <DividendsCard />
-
-      <div className='grid gap-3 sm:gap-4 md:grid-cols-2'>
-        <TopMoversCard title='Maiores ganhos' movers={gainers} />
-        <TopMoversCard title='Maiores perdas' movers={losers} />
-      </div>
     </div>
   );
 }

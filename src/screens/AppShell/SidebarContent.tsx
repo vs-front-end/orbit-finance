@@ -18,6 +18,7 @@ import {
   ChartLine,
   ChevronLeft,
   ChevronRight,
+  FileText,
   LayoutDashboard,
   Landmark,
   LogOut,
@@ -242,6 +243,16 @@ export function SidebarContent({
           >
             <Landmark className='size-4 shrink-0' />
             {!collapsed && 'Patrimônio'}
+          </SidebarNavItem>
+
+          <SidebarNavItem
+            collapsed={collapsed}
+            tooltip='Relatórios'
+            to='/relatorios'
+            onClick={onNavigate}
+          >
+            <FileText className='size-4 shrink-0' />
+            {!collapsed && 'Relatórios'}
           </SidebarNavItem>
 
           <SidebarNavItem

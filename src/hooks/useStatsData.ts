@@ -1,18 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 
 import type { ChartSeries } from '@/components/Charts';
-import type { CashFlow, Currency, PositionView } from '@/domain';
+import type { CashFlow, Currency } from '@/domain';
 import { timeWeightedReturn } from '@/domain';
 import { historyService, quotesService } from '@/services';
 
 import { useDashboardData } from './useDashboardData';
 import { useAllTransactions, useUsdBrlRate } from './queries';
-
-export type PositionMover = {
-  view: PositionView;
-  currency: Currency;
-  portfolioName: string;
-};
 
 export function useStatsData(days: number) {
   const dashboard = useDashboardData();
@@ -62,24 +56,6 @@ export function useStatsData(days: number) {
       ]
     : [];
 
-  const movers: PositionMover[] = dashboard.perPortfolio
-    .flatMap(({ portfolio, views }) =>
-      views
-        .filter((view) => view.quote !== null)
-        .map((view) => ({
-          view,
-          currency: portfolio.currency,
-          portfolioName: portfolio.name,
-        })),
-    )
-    .sort((a, b) => b.view.netPLPercent - a.view.netPLPercent);
-
-  const gainers = movers.filter((m) => m.view.netPL > 0).slice(0, 5);
-  const losers = movers
-    .filter((m) => m.view.netPL < 0)
-    .sort((a, b) => a.view.netPLPercent - b.view.netPLPercent)
-    .slice(0, 5);
-
   const investedBRL = dashboard.perPortfolio.reduce(
     (sum, { portfolio, summary }) =>
       sum + toBRL(summary.investedValue, portfolio.currency),
@@ -119,10 +95,6 @@ export function useStatsData(days: number) {
     consolidatedSeries,
     portfolioSeries,
     hasHistory: (consolidatedSeries[0]?.points.length ?? 0) >= 2,
-    gainers,
-    losers,
-    best: movers[0] ?? null,
-    worst: movers.length > 0 ? (movers[movers.length - 1] ?? null) : null,
     isLoading:
       dashboard.isLoading ||
       historyQuery.isLoading ||
