@@ -9,6 +9,7 @@ import {
   quotesService,
   targetsService,
 } from '@/services';
+import { isMarketOpen } from '@/utils';
 
 export const queryKeys = {
   user: ['user'] as const,
@@ -76,7 +77,8 @@ export function useQuotes(tickers: string[]) {
     queryKey: queryKeys.quotes(sorted),
     queryFn: () => quotesService.getQuotes(sorted),
     enabled: sorted.length > 0,
-    staleTime: 300_000,
+    staleTime: 10_000,
+    refetchInterval: () => (isMarketOpen() ? 10_000 : false),
     refetchOnWindowFocus: true,
     placeholderData: keepPreviousData,
   });
