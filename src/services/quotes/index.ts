@@ -23,7 +23,7 @@ function isPlausibleQuote(quote: Quote): boolean {
     const ratio = quote.price / quote.previousClose;
     if (ratio < 0.1 || ratio > 10) return false;
   }
-  
+
   return true;
 }
 
