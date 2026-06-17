@@ -54,7 +54,7 @@ export function buildPositions(transactions: Transaction[]): Position[] {
     byTicker.set(tx.ticker, current);
   }
 
-  return [...byTicker.values()].filter((position) => position.quantity > 0);
+  return [...byTicker.values()].filter((position) => position.quantity > 1e-8);
 }
 
 export function enrichPosition(

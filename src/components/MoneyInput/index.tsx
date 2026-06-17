@@ -1,4 +1,6 @@
 import { InputText } from '@stellar-ui-kit/web';
+import { cn } from '@stellar-ui-kit/shared';
+import { Loader2 } from 'lucide-react';
 
 type MoneyInputProps = {
   value: number | null;
@@ -9,6 +11,7 @@ type MoneyInputProps = {
   error?: string;
   required?: boolean;
   disabled?: boolean;
+  loading?: boolean;
   className?: string;
   containerClassName?: string;
 };
@@ -22,6 +25,8 @@ export function MoneyInput({
   value,
   onChange,
   placeholder = '0,00',
+  loading = false,
+  className,
   ...rest
 }: MoneyInputProps) {
   const display = value === null ? '' : formatter.format(value);
@@ -32,11 +37,17 @@ export function MoneyInput({
   };
 
   return (
-    <InputText
-      {...rest}
-      placeholder={placeholder}
-      value={display}
-      onChange={handleChange}
-    />
+    <div className='relative'>
+      <InputText
+        {...rest}
+        placeholder={placeholder}
+        value={display}
+        onChange={handleChange}
+        className={cn(loading && 'pr-9', className)}
+      />
+      {loading && (
+        <Loader2 className='pointer-events-none absolute right-3 top-8 size-4 animate-spin text-muted' />
+      )}
+    </div>
   );
 }

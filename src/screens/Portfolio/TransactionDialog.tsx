@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ptBR } from 'date-fns/locale';
 
@@ -59,24 +59,31 @@ export function TransactionDialog({
   const [ticker, setTicker] = useState(
     transaction?.ticker ?? initialTicker ?? '',
   );
+
   const [side, setSide] = useState<TransactionSide>(
     transaction?.side ?? initialSide ?? 'buy',
   );
+
   const [quantity, setQuantity] = useState(
     transaction ? formatQuantity(transaction.quantity) : '',
   );
+
   const [price, setPrice] = useState<number | null>(
     transaction?.unitPrice ?? null,
   );
+
   const [date, setDate] = useState<Date>(
     transaction ? new Date(transaction.executedAt) : new Date(),
   );
+
   const [time, setTime] = useState(() =>
     transaction
       ? toTimeValue(transaction.executedAt)
       : toTimeValue(new Date().toISOString()),
   );
+
   const [priceLoading, setPriceLoading] = useState(false);
+
   const addTransaction = useAddTransaction();
   const updateTransaction = useUpdateTransaction();
 
@@ -133,6 +140,26 @@ export function TransactionDialog({
       { onSuccess: onClose },
     );
   };
+
+  useEffect(() => {
+    if (isEdit || !initialTicker) return;
+
+    let active = true;
+    setPriceLoading(true);
+
+    quotesService
+      .getQuotes([initialTicker])
+      .then(([quote]) => {
+        if (active && quote) setPrice(quote.price);
+      })
+      .finally(() => {
+        if (active) setPriceLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isEdit, initialTicker]);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -197,7 +224,7 @@ export function TransactionDialog({
               label={`Preço (${portfolio.currency})`}
               value={price}
               onChange={setPrice}
-              helperText={priceLoading ? 'Buscando preço atual...' : undefined}
+              loading={priceLoading}
               required
             />
           </div>

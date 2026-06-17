@@ -16,6 +16,17 @@ export type QuotesService = {
   }>;
 };
 
+function isPlausibleQuote(quote: Quote): boolean {
+  if (!Number.isFinite(quote.price) || quote.price <= 0) return false;
+
+  if (Number.isFinite(quote.previousClose) && quote.previousClose > 0) {
+    const ratio = quote.price / quote.previousClose;
+    if (ratio < 0.1 || ratio > 10) return false;
+  }
+  
+  return true;
+}
+
 export function toYahooSymbol(ticker: string): string {
   const assetClass = findAsset(ticker)?.assetClass;
   if (assetClass === 'crypto') return `${ticker}-USD`;
@@ -34,7 +45,7 @@ export const quotesService: QuotesService = {
 
     const quotes = await getYahooQuotes([...tickerBySymbol.keys()]);
 
-    return quotes.map((quote) => ({
+    return quotes.filter(isPlausibleQuote).map((quote) => ({
       ...quote,
       ticker: tickerBySymbol.get(quote.ticker.toUpperCase()) ?? quote.ticker,
     }));
