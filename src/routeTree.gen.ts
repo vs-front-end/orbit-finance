@@ -15,7 +15,6 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppSimuladorCdbRouteImport } from './routes/_app.simulador-cdb'
 import { Route as AppRelatoriosRouteImport } from './routes/_app.relatorios'
 import { Route as AppRebalanceamentoRouteImport } from './routes/_app.rebalanceamento'
-import { Route as AppOutrosBensRouteImport } from './routes/_app.outros-bens'
 import { Route as AppJurosCompostosRouteImport } from './routes/_app.juros-compostos'
 import { Route as AppEstatisticasRouteImport } from './routes/_app.estatisticas'
 import { Route as AppCarteirasPortfolioIdRouteImport } from './routes/_app.carteiras.$portfolioId'
@@ -49,11 +48,6 @@ const AppRebalanceamentoRoute = AppRebalanceamentoRouteImport.update({
   path: '/rebalanceamento',
   getParentRoute: () => AppRoute,
 } as any)
-const AppOutrosBensRoute = AppOutrosBensRouteImport.update({
-  id: '/outros-bens',
-  path: '/outros-bens',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppJurosCompostosRoute = AppJurosCompostosRouteImport.update({
   id: '/juros-compostos',
   path: '/juros-compostos',
@@ -75,7 +69,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/estatisticas': typeof AppEstatisticasRoute
   '/juros-compostos': typeof AppJurosCompostosRoute
-  '/outros-bens': typeof AppOutrosBensRoute
   '/rebalanceamento': typeof AppRebalanceamentoRoute
   '/relatorios': typeof AppRelatoriosRoute
   '/simulador-cdb': typeof AppSimuladorCdbRoute
@@ -85,7 +78,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/estatisticas': typeof AppEstatisticasRoute
   '/juros-compostos': typeof AppJurosCompostosRoute
-  '/outros-bens': typeof AppOutrosBensRoute
   '/rebalanceamento': typeof AppRebalanceamentoRoute
   '/relatorios': typeof AppRelatoriosRoute
   '/simulador-cdb': typeof AppSimuladorCdbRoute
@@ -98,7 +90,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_app/estatisticas': typeof AppEstatisticasRoute
   '/_app/juros-compostos': typeof AppJurosCompostosRoute
-  '/_app/outros-bens': typeof AppOutrosBensRoute
   '/_app/rebalanceamento': typeof AppRebalanceamentoRoute
   '/_app/relatorios': typeof AppRelatoriosRoute
   '/_app/simulador-cdb': typeof AppSimuladorCdbRoute
@@ -112,7 +103,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/estatisticas'
     | '/juros-compostos'
-    | '/outros-bens'
     | '/rebalanceamento'
     | '/relatorios'
     | '/simulador-cdb'
@@ -122,7 +112,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/estatisticas'
     | '/juros-compostos'
-    | '/outros-bens'
     | '/rebalanceamento'
     | '/relatorios'
     | '/simulador-cdb'
@@ -134,7 +123,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/_app/estatisticas'
     | '/_app/juros-compostos'
-    | '/_app/outros-bens'
     | '/_app/rebalanceamento'
     | '/_app/relatorios'
     | '/_app/simulador-cdb'
@@ -191,13 +179,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRebalanceamentoRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/outros-bens': {
-      id: '/_app/outros-bens'
-      path: '/outros-bens'
-      fullPath: '/outros-bens'
-      preLoaderRoute: typeof AppOutrosBensRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/juros-compostos': {
       id: '/_app/juros-compostos'
       path: '/juros-compostos'
@@ -225,7 +206,6 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppEstatisticasRoute: typeof AppEstatisticasRoute
   AppJurosCompostosRoute: typeof AppJurosCompostosRoute
-  AppOutrosBensRoute: typeof AppOutrosBensRoute
   AppRebalanceamentoRoute: typeof AppRebalanceamentoRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppSimuladorCdbRoute: typeof AppSimuladorCdbRoute
@@ -236,7 +216,6 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppEstatisticasRoute: AppEstatisticasRoute,
   AppJurosCompostosRoute: AppJurosCompostosRoute,
-  AppOutrosBensRoute: AppOutrosBensRoute,
   AppRebalanceamentoRoute: AppRebalanceamentoRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
   AppSimuladorCdbRoute: AppSimuladorCdbRoute,

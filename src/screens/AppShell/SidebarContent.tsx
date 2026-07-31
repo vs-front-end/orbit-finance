@@ -20,7 +20,6 @@ import {
   ChevronRight,
   FileText,
   LayoutDashboard,
-  Landmark,
   LogOut,
   Percent,
   Plus,
@@ -233,16 +232,6 @@ export function SidebarContent({
           >
             <LayoutDashboard className='size-4 shrink-0' />
             {!collapsed && 'Dashboard'}
-          </SidebarNavItem>
-
-          <SidebarNavItem
-            collapsed={collapsed}
-            tooltip='Patrimônio'
-            to='/outros-bens'
-            onClick={onNavigate}
-          >
-            <Landmark className='size-4 shrink-0' />
-            {!collapsed && 'Patrimônio'}
           </SidebarNavItem>
 
           <SidebarNavItem
