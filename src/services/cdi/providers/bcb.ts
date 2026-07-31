@@ -54,11 +54,6 @@ async function fetchBcbLatest(): Promise<BcbPoint> {
   };
 }
 
-export async function getBcbCdiAnnual(): Promise<number> {
-  const { daily } = await fetchBcbLatest();
-  return (1 + daily) ** 252 - 1;
-}
-
 export async function getBcbCdiSeries(since: string): Promise<CdiRatePoint[]> {
   const start = since.trim();
   const today = todayIso();

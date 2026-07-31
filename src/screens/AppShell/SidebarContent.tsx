@@ -21,10 +21,8 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
-  Percent,
   Plus,
   Scale,
-  TrendingUp,
   Wallet,
 } from 'lucide-react';
 
@@ -254,6 +252,16 @@ export function SidebarContent({
             {!collapsed && 'Estatísticas'}
           </SidebarNavItem>
 
+          <SidebarNavItem
+            collapsed={collapsed}
+            tooltip='Rebalanceamento'
+            to='/rebalanceamento'
+            onClick={onNavigate}
+          >
+            <Scale className='size-4 shrink-0' />
+            {!collapsed && 'Rebalanceamento'}
+          </SidebarNavItem>
+
           <Separator className='my-3' />
 
           {!collapsed ? (
@@ -293,46 +301,6 @@ export function SidebarContent({
               onNavigate={onNavigate}
             />
           ))}
-
-          <Separator className='my-3' />
-
-          {!collapsed && (
-            <div className='mb-1 px-3'>
-              <span className='text-xs font-semibold uppercase tracking-wide text-muted'>
-                Ferramentas
-              </span>
-            </div>
-          )}
-
-          <SidebarNavItem
-            collapsed={collapsed}
-            tooltip='Rebalanceamento'
-            to='/rebalanceamento'
-            onClick={onNavigate}
-          >
-            <Scale className='size-4 shrink-0' />
-            {!collapsed && 'Rebalanceamento'}
-          </SidebarNavItem>
-
-          <SidebarNavItem
-            collapsed={collapsed}
-            tooltip='Juros compostos'
-            to='/juros-compostos'
-            onClick={onNavigate}
-          >
-            <TrendingUp className='size-4 shrink-0' />
-            {!collapsed && 'Juros compostos'}
-          </SidebarNavItem>
-
-          <SidebarNavItem
-            collapsed={collapsed}
-            tooltip='Simulador CDI'
-            to='/simulador-cdb'
-            onClick={onNavigate}
-          >
-            <Percent className='size-4 shrink-0' />
-            {!collapsed && 'Simulador CDI'}
-          </SidebarNavItem>
         </nav>
 
         <Separator />

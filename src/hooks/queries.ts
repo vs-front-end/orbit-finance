@@ -22,7 +22,6 @@ export const queryKeys = {
   quotes: (tickers: string[]) => ['quotes', ...tickers] as const,
   dividends: (tickers: string[]) => ['dividends', ...tickers] as const,
   usdBrl: ['usd-brl'] as const,
-  cdi: ['cdi'] as const,
   targets: ['targets'] as const,
   patrimonyItems: ['patrimony-items'] as const,
 };
@@ -109,14 +108,6 @@ export function useUsdBrlSeries() {
     queryKey: ['usd-brl-series'],
     queryFn: () => quotesService.getUsdBrlSeries(),
     staleTime: 12 * 60 * 60 * 1000,
-  });
-}
-
-export function useCdiAnnual() {
-  return useQuery({
-    queryKey: queryKeys.cdi,
-    queryFn: () => cdiService.getCdiAnnual(),
-    staleTime: Infinity,
   });
 }
 
