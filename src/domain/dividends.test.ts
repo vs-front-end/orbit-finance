@@ -265,3 +265,59 @@ describe('totalsInBRL', () => {
     expect(taxBRL).toBeCloseTo(330, 6);
   });
 });
+
+describe('withholdingRate com rótulo', () => {
+  it('retains 15% on JCP even for stock-br', () => {
+    expect(withholdingRate('stock-br', '2026-06-02', 'JRS CAP PROPRIO')).toBe(
+      0.15,
+    );
+  });
+
+  it('keeps stock-br dividends exempt', () => {
+    expect(withholdingRate('stock-br', '2026-06-02', 'DIVIDENDO')).toBe(0);
+    expect(withholdingRate('stock-br', '2026-06-02')).toBe(0);
+  });
+
+  it('keeps FII income exempt', () => {
+    expect(withholdingRate('fii', '2026-06-02', 'RENDIMENTO')).toBe(0);
+  });
+
+  it('still retains 30% on US dividends', () => {
+    expect(withholdingRate('stock-us', '2026-06-02')).toBe(0.3);
+  });
+});
+
+describe('computeReceivedDividends com pagamento', () => {
+  it('applies the JCP rate and carries the payment date through', () => {
+    const [received] = computeReceivedDividends(
+      [
+        {
+          id: '1',
+          portfolioId: 'p1',
+          ticker: 'PETR4',
+          side: 'buy',
+          quantity: 100,
+          unitPrice: 30,
+          executedAt: '2024-01-10T12:00:00.000Z',
+        },
+      ],
+      [
+        {
+          ticker: 'PETR4',
+          exDate: '2026-06-02',
+          amount: 0.35,
+          paymentDate: '2026-08-20',
+          estimatedPayment: false,
+          paymentLabel: 'JRS CAP PROPRIO',
+        },
+      ],
+      () => 'stock-br',
+    );
+
+    expect(received.gross).toBeCloseTo(35, 10);
+    expect(received.tax).toBeCloseTo(5.25, 10);
+    expect(received.received).toBeCloseTo(29.75, 10);
+    expect(received.paymentDate).toBe('2026-08-20');
+    expect(received.estimatedPayment).toBe(false);
+  });
+});

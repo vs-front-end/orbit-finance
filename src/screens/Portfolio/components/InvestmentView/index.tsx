@@ -75,7 +75,13 @@ export function InvestmentView({ portfolio }: { portfolio: Portfolio }) {
             <StatCard label='Total investido'>
               {formatMoney(summary.investedValue, portfolio.currency)}
             </StatCard>
-            <StatCard label='Valor de mercado'>
+            <StatCard
+              label={
+                summary.missingQuotes > 0
+                  ? `Valor de mercado (${summary.missingQuotes} a custo)`
+                  : 'Valor de mercado'
+              }
+            >
               {formatMoney(summary.marketValue, portfolio.currency)}
             </StatCard>
             <StatCard label='Pos. abertas'>

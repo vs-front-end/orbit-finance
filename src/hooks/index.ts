@@ -3,6 +3,7 @@ export * from './mutations';
 export * from './useAssetSearch';
 export * from './useTableSort';
 export * from './usePositionViews';
+export * from './useAdjustedTransactions';
 export * from './useDividends';
 export * from './useDashboardData';
 export * from './useDashboardOverview';

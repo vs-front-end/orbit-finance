@@ -1,6 +1,7 @@
 import {
+  attachPaymentDates,
   buildPositions,
-  computeRealizedPL,
+  computeRealizedEvents,
   computeReceivedDividends,
   makeFxLookup,
   projectPendingDividends,
@@ -10,30 +11,34 @@ import { findAsset } from '@/services';
 
 import { useDashboardData } from './useDashboardData';
 import {
-  useAllTransactions,
   useDividendEvents,
+  useDividendPayments,
   usePortfolios,
   useUsdBrlRate,
   useUsdBrlSeries,
 } from './queries';
+import { useAdjustedTransactions } from './useAdjustedTransactions';
 
 const classOf = (ticker: string) => findAsset(ticker)?.assetClass ?? null;
 
 export function useDashboardOverview() {
   const dashboard = useDashboardData();
   const portfoliosQuery = usePortfolios();
-  const transactionsQuery = useAllTransactions();
   const rateQuery = useUsdBrlRate();
   const fxQuery = useUsdBrlSeries();
 
-  const transactions = transactionsQuery.data ?? [];
-  const tickers = [
-    ...new Set(transactions.map((transaction) => transaction.ticker)),
-  ];
-  const eventsQuery = useDividendEvents(tickers, true);
-  const events = eventsQuery.data ?? [];
+  const { transactions, isLoading: transactionsLoading } =
+    useAdjustedTransactions();
+  const eventsQuery = useDividendEvents();
+  const paymentsQuery = useDividendPayments();
+
+  const events = attachPaymentDates(
+    eventsQuery.data ?? [],
+    paymentsQuery.data ?? [],
+  );
   const rate = rateQuery.data ?? 0;
-  const usdToBrlAt = makeFxLookup(fxQuery.data ?? []);
+  const fxSeries = fxQuery.data ?? [];
+  const usdToBrlAt = makeFxLookup(fxSeries);
   const today = new Date().toISOString().slice(0, 10);
 
   const investmentPortfolios = portfoliosQuery.data ?? [];
@@ -47,14 +52,17 @@ export function useDashboardOverview() {
       (transaction) => transaction.portfolioId === portfolio.id,
     );
     const isUsd = portfolio.currency === 'USD';
-    const rateAt = isUsd ? usdToBrlAt : () => 1;
-    realizedBRL += computeRealizedPL(ownTransactions) * (isUsd ? rate : 1);
+    const rateAt =
+      isUsd && fxSeries.length > 0 ? usdToBrlAt : () => (isUsd ? rate : 1);
+
+    for (const realized of computeRealizedEvents(ownTransactions)) {
+      realizedBRL += realized.amount * rateAt(realized.date);
+    }
+
     const received = computeReceivedDividends(ownTransactions, events, classOf);
 
     for (const dividend of received) {
-      const fx = rateAt(dividend.exDate);
-      const valueBRL = dividend.received * fx;
-      receivedBRL += valueBRL;
+      receivedBRL += dividend.received * rateAt(dividend.exDate);
     }
 
     const pending = projectPendingDividends(
@@ -81,9 +89,9 @@ export function useDashboardOverview() {
     isLoading:
       dashboard.isLoading ||
       portfoliosQuery.isLoading ||
-      transactionsQuery.isLoading ||
+      transactionsLoading ||
       rateQuery.isLoading ||
       fxQuery.isLoading ||
-      (tickers.length > 0 && eventsQuery.isLoading),
+      eventsQuery.isLoading,
   };
 }

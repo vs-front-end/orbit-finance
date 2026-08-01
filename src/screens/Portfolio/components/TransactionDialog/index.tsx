@@ -29,7 +29,13 @@ import {
 } from '@/domain';
 import { useAddTransaction, useUpdateTransaction } from '@/hooks';
 import { assetsService, quotesService, type AssetHit } from '@/services';
-import { formatQuantity, parseDecimal } from '@/utils';
+import {
+  formatQuantity,
+  parseDecimal,
+  toTradeDateIso,
+  tradeDateOf,
+  tradeTimeOf,
+} from '@/utils';
 
 import { MoneyInput } from '@/components';
 
@@ -42,11 +48,6 @@ type TransactionDialogProps = {
   initialSide?: TransactionSide;
   onClose: () => void;
 };
-
-function toTimeValue(iso: string): string {
-  const date = new Date(iso);
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
 
 export function TransactionDialog({
   portfolio,
@@ -73,14 +74,15 @@ export function TransactionDialog({
   );
 
   const [date, setDate] = useState<Date>(
-    transaction ? new Date(transaction.executedAt) : new Date(),
+    transaction ? tradeDateOf(transaction.executedAt) : new Date(),
   );
 
-  const [time, setTime] = useState(() =>
-    transaction
-      ? toTimeValue(transaction.executedAt)
-      : toTimeValue(new Date().toISOString()),
-  );
+  const [time, setTime] = useState(() => {
+    if (transaction) return tradeTimeOf(transaction.executedAt);
+
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  });
 
   const [priceLoading, setPriceLoading] = useState(false);
 
@@ -112,15 +114,11 @@ export function TransactionDialog({
   const isPending = addTransaction.isPending || updateTransaction.isPending;
 
   const handleSubmit = () => {
-    const executedAt = new Date(date);
-    const [hours = 0, minutes = 0] = time.split(':').map(Number);
-    executedAt.setHours(hours, minutes, 0, 0);
-
     const payload = {
       side,
       quantity: parsedQuantity,
       unitPrice: parsedPrice,
-      executedAt: executedAt.toISOString(),
+      executedAt: toTradeDateIso(date, time),
     };
 
     if (isEdit) {

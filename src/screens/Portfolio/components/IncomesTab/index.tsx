@@ -53,7 +53,7 @@ export function IncomesTab({ portfolio, investedValue }: IncomesTabProps) {
         <Table>
           <thead>
             <tr>
-              <THeadCell>Data-com</THeadCell>
+              <THeadCell>Data-ex</THeadCell>
               <THeadCell>Ativo</THeadCell>
               <THeadCell className='text-right'>Valor</THeadCell>
             </tr>

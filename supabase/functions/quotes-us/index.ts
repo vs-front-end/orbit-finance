@@ -191,6 +191,174 @@ async function fetchDividends(
     }));
 }
 
+const B3_FUNDS =
+  'https://sistemaswebb3-listados.b3.com.br/fundsProxy/fundsCall/GetListedSupplementFunds';
+const B3_COMPANIES =
+  'https://sistemaswebb3-listados.b3.com.br/listedCompaniesProxy/CompanyCall';
+
+type B3PaymentRequest = { ticker: string };
+type SplitRequest = { ticker: string; symbol: string };
+type SplitEvent = { ticker: string; date: string; ratio: number };
+type DividendPayment = {
+  ticker: string;
+  dataCom: string;
+  paymentDate: string;
+  rate: number;
+  label: string;
+};
+
+function fromBrDate(value: unknown): string | null {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(value ?? ''));
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : null;
+}
+
+function fromBrNumber(value: unknown): number {
+  return Number(
+    String(value ?? '')
+      .replace(/\./g, '')
+      .replace(',', '.'),
+  );
+}
+
+function b3Params(payload: unknown): string {
+  return btoa(JSON.stringify(payload));
+}
+
+async function b3Json(url: string): Promise<unknown> {
+  const response = await fetch(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+  });
+  if (!response.ok) return null;
+
+  const body = await response.json();
+  return typeof body === 'string' ? JSON.parse(body) : body;
+}
+
+// PETR3 é ON e PETR4 é PN; a B3 devolve as duas classes juntas, separadas
+// apenas pelo ISIN, que marca a classe em OR/PR na posição 9.
+function matchesShareClass(ticker: string, isin: string): boolean {
+  const shareClass = isin.slice(9, 11);
+
+  if (ticker.endsWith('3')) return shareClass === 'OR';
+  if (ticker.endsWith('4')) return shareClass === 'PR';
+  return true;
+}
+
+function toPayments(
+  ticker: string,
+  entries: Array<Record<string, unknown>>,
+  isinFilter: boolean,
+): DividendPayment[] {
+  const seen = new Set<string>();
+  const payments: DividendPayment[] = [];
+
+  for (const entry of entries) {
+    const paymentDate = fromBrDate(entry.paymentDate);
+    const dataCom = fromBrDate(entry.lastDatePrior);
+    const rate = fromBrNumber(entry.rate);
+    if (!paymentDate || !dataCom || !Number.isFinite(rate) || rate <= 0) {
+      continue;
+    }
+
+    const isin = String(entry.isinCode ?? '');
+    if (isinFilter && !matchesShareClass(ticker, isin)) continue;
+
+    const key = `${paymentDate}-${dataCom}-${rate}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    payments.push({
+      ticker,
+      dataCom,
+      paymentDate,
+      rate,
+      label: String(entry.label ?? ''),
+    });
+  }
+
+  return payments;
+}
+
+async function fetchFundPayments(ticker: string): Promise<DividendPayment[]> {
+  const identifierFund = ticker.replace(/11B?$/, '');
+  const data = await b3Json(
+    `${B3_FUNDS}/${b3Params({ typeFund: 7, identifierFund })}`,
+  );
+  const entries = (data as { cashDividends?: unknown })?.cashDividends;
+
+  return toPayments(ticker, Array.isArray(entries) ? entries : [], false);
+}
+
+async function fetchCompanyPayments(
+  ticker: string,
+): Promise<DividendPayment[]> {
+  const found = await b3Json(
+    `${B3_COMPANIES}/GetInitialCompanies/${b3Params({
+      language: 'pt-br',
+      pageNumber: 1,
+      pageSize: 5,
+      company: ticker,
+    })}`,
+  );
+
+  const results = (found as { results?: unknown })?.results;
+  const first = Array.isArray(results)
+    ? (results[0] as Record<string, unknown> | undefined)
+    : undefined;
+  const issuingCompany = String(first?.issuingCompany ?? '');
+  if (issuingCompany === '') return [];
+
+  const data = await b3Json(
+    `${B3_COMPANIES}/GetListedSupplementCompany/${b3Params({
+      issuingCompany,
+      language: 'pt-br',
+    })}`,
+  );
+
+  const detail = Array.isArray(data)
+    ? (data[0] as { cashDividends?: unknown } | undefined)
+    : (data as { cashDividends?: unknown } | null);
+  const entries = detail?.cashDividends;
+
+  return toPayments(ticker, Array.isArray(entries) ? entries : [], true);
+}
+
+async function fetchB3Payments(ticker: string): Promise<DividendPayment[]> {
+  const upper = ticker.toUpperCase();
+
+  return /11B?$/.test(upper)
+    ? fetchFundPayments(upper)
+    : fetchCompanyPayments(upper);
+}
+
+async function fetchSplits(
+  ticker: string,
+  symbol: string,
+): Promise<SplitEvent[]> {
+  const response = await fetch(
+    `${YAHOO}/${encodeURIComponent(symbol)}?interval=1d&range=20y&events=split`,
+    { headers: { 'User-Agent': 'Mozilla/5.0' } },
+  );
+  if (!response.ok) return [];
+
+  const data = await response.json();
+  const splits = data?.chart?.result?.[0]?.events?.splits ?? {};
+
+  return (Object.values(splits) as Array<Record<string, unknown>>)
+    .filter(
+      (entry) =>
+        typeof entry.date === 'number' &&
+        typeof entry.numerator === 'number' &&
+        typeof entry.denominator === 'number' &&
+        (entry.denominator as number) > 0,
+    )
+    .map((entry) => ({
+      ticker,
+      date: new Date((entry.date as number) * 1000).toISOString().slice(0, 10),
+      ratio: (entry.numerator as number) / (entry.denominator as number),
+    }));
+}
+
 async function fetchFxSeries(
   range: string,
 ): Promise<Array<{ date: string; rate: number }>> {
@@ -246,6 +414,28 @@ Deno.serve(async (req) => {
             String(request.symbol),
             range,
           ).catch(() => [] as DividendEvent[]),
+        ),
+      );
+      return Response.json(results.flat(), { headers: cors });
+    }
+
+    if (Array.isArray(body.payments)) {
+      const results = await Promise.all(
+        (body.payments as B3PaymentRequest[]).map((request) =>
+          fetchB3Payments(String(request.ticker)).catch(
+            () => [] as DividendPayment[],
+          ),
+        ),
+      );
+      return Response.json(results.flat(), { headers: cors });
+    }
+
+    if (Array.isArray(body.splits)) {
+      const results = await Promise.all(
+        (body.splits as SplitRequest[]).map((request) =>
+          fetchSplits(String(request.ticker), String(request.symbol)).catch(
+            () => [] as SplitEvent[],
+          ),
         ),
       );
       return Response.json(results.flat(), { headers: cors });

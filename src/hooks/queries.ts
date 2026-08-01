@@ -1,11 +1,10 @@
 import {
   keepPreviousData,
-  type QueryClient,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 
-import type { DividendEvent, Portfolio, Quote, Transaction } from '@/domain';
+import type { Portfolio } from '@/domain';
 
 import {
   assetsService,
@@ -20,10 +19,11 @@ export const queryKeys = {
   assets: ['assets'] as const,
   portfolios: ['portfolios'] as const,
   portfolio: (id: string) => ['portfolios', id] as const,
-  transactions: (portfolioId: string) => ['transactions', portfolioId] as const,
   allTransactions: ['transactions'] as const,
   quotes: (tickers: string[]) => ['quotes', ...tickers] as const,
   dividends: (tickers: string[]) => ['dividends', ...tickers] as const,
+  payments: (tickers: string[]) => ['payments', ...tickers] as const,
+  splits: (tickers: string[]) => ['splits', ...tickers] as const,
   usdBrl: ['usd-brl'] as const,
   targets: ['targets'] as const,
 };
@@ -33,55 +33,6 @@ const sessionCacheOptions = {
   gcTime: Infinity,
   refetchOnWindowFocus: false,
 };
-
-function getCachedQuotes(
-  queryClient: QueryClient,
-  tickers: string[],
-): Quote[] | undefined {
-  const quoteByTicker = new Map<string, Quote>();
-  const cachedQueries = queryClient.getQueriesData<Quote[]>({
-    queryKey: ['quotes'],
-  });
-
-  for (const [, quotes] of cachedQueries) {
-    for (const quote of quotes ?? []) {
-      quoteByTicker.set(quote.ticker, quote);
-    }
-  }
-
-  const quotes = tickers.flatMap((ticker) => {
-    const quote = quoteByTicker.get(ticker);
-    return quote === undefined ? [] : [quote];
-  });
-
-  return quotes.length === tickers.length ? quotes : undefined;
-}
-
-function getCachedDividendEvents(
-  queryClient: QueryClient,
-  tickers: string[],
-): DividendEvent[] | undefined {
-  const eventsByKey = new Map<string, DividendEvent>();
-  const cachedTickers = new Set<string>();
-  const cachedQueries = queryClient.getQueriesData<DividendEvent[]>({
-    queryKey: ['dividends'],
-  });
-
-  for (const [queryKey, events] of cachedQueries) {
-    for (const part of queryKey.slice(1)) {
-      if (typeof part === 'string') cachedTickers.add(part);
-    }
-
-    for (const event of events ?? []) {
-      eventsByKey.set(`${event.ticker}-${event.exDate}`, event);
-    }
-  }
-
-  const events = [...eventsByKey.values()];
-  return tickers.every((ticker) => cachedTickers.has(ticker))
-    ? events.filter((event) => tickers.includes(event.ticker))
-    : undefined;
-}
 
 export function useAssets() {
   return useQuery({
@@ -113,20 +64,6 @@ export function usePortfolio(id: string) {
   });
 }
 
-export function useTransactions(portfolioId: string) {
-  const queryClient = useQueryClient();
-
-  return useQuery({
-    queryKey: queryKeys.transactions(portfolioId),
-    queryFn: () => portfoliosService.listTransactions(portfolioId),
-    initialData: () =>
-      queryClient
-        .getQueryData<Transaction[]>(queryKeys.allTransactions)
-        ?.filter((transaction) => transaction.portfolioId === portfolioId),
-    ...sessionCacheOptions,
-  });
-}
-
 export function useAllTransactions() {
   return useQuery({
     queryKey: queryKeys.allTransactions,
@@ -135,31 +72,62 @@ export function useAllTransactions() {
   });
 }
 
-export function useQuotes(tickers: string[]) {
-  const queryClient = useQueryClient();
-  const sorted = [...tickers].sort();
+// Dado de mercado é buscado uma vez para o universo inteiro de tickers. Com a
+// mesma chave em toda tela, Dashboard e carteiras dividem a mesma entrada de
+// cache e navegar não dispara busca nova. Quem precisa de um recorte filtra
+// localmente.
+export function useAllTickers(): string[] {
+  const { data } = useAllTransactions();
+
+  return [
+    ...new Set((data ?? []).map((transaction) => transaction.ticker)),
+  ].sort();
+}
+
+export function useQuotes() {
+  const tickers = useAllTickers();
 
   return useQuery({
-    queryKey: queryKeys.quotes(sorted),
-    queryFn: () => quotesService.getQuotes(sorted),
-    enabled: sorted.length > 0,
+    queryKey: queryKeys.quotes(tickers),
+    queryFn: () => quotesService.getQuotes(tickers),
+    enabled: tickers.length > 0,
     ...sessionCacheOptions,
     placeholderData: keepPreviousData,
-    initialData: () => getCachedQuotes(queryClient, sorted),
   });
 }
 
-export function useDividendEvents(tickers: string[], refreshOnMount = false) {
-  const queryClient = useQueryClient();
-  const sorted = [...tickers].sort();
+export function useDividendEvents() {
+  const tickers = useAllTickers();
 
   return useQuery({
-    queryKey: queryKeys.dividends(sorted),
-    queryFn: () => dividendsService.getDividends(sorted),
-    enabled: sorted.length > 0,
-    initialData: () => getCachedDividendEvents(queryClient, sorted),
+    queryKey: queryKeys.dividends(tickers),
+    queryFn: () => dividendsService.getDividends(tickers),
+    enabled: tickers.length > 0,
     ...sessionCacheOptions,
-    refetchOnMount: refreshOnMount ? 'always' : false,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useDividendPayments() {
+  const tickers = useAllTickers();
+
+  return useQuery({
+    queryKey: queryKeys.payments(tickers),
+    queryFn: () => dividendsService.getPayments(tickers),
+    enabled: tickers.length > 0,
+    ...sessionCacheOptions,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useSplits() {
+  const tickers = useAllTickers();
+
+  return useQuery({
+    queryKey: queryKeys.splits(tickers),
+    queryFn: () => dividendsService.getSplits(tickers),
+    enabled: tickers.length > 0,
+    ...sessionCacheOptions,
     placeholderData: keepPreviousData,
   });
 }

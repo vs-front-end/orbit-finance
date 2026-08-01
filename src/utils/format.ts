@@ -49,6 +49,7 @@ export function formatDateTime(iso: string): string {
   return new Intl.DateTimeFormat(LOCALE, {
     dateStyle: 'short',
     timeStyle: 'short',
+    timeZone: 'UTC',
   }).format(new Date(iso));
 }
 

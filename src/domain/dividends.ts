@@ -4,11 +4,16 @@ export type DividendEvent = {
   ticker: string;
   exDate: string;
   amount: number;
+  paymentDate?: string;
+  estimatedPayment?: boolean;
+  paymentLabel?: string;
 };
 
 export type ReceivedDividend = {
   ticker: string;
   exDate: string;
+  paymentDate: string;
+  estimatedPayment: boolean;
   amountPerShare: number;
   quantity: number;
   gross: number;
@@ -25,10 +30,18 @@ const WITHHOLDING: Record<AssetClass, WithholdingBracket[]> = {
   crypto: [{ from: '1970-01-01', rate: 0 }],
 };
 
+const JCP_RATE = 0.15;
+
+function isJcp(label: string | undefined): boolean {
+  return (label ?? '').toUpperCase().includes('JRS CAP PROPRIO');
+}
+
 export function withholdingRate(
   assetClass: AssetClass | null,
   exDate: string,
+  label?: string,
 ): number {
+  if (isJcp(label)) return JCP_RATE;
   if (!assetClass) return 0;
 
   let rate = 0;
@@ -70,11 +83,19 @@ export function computeReceivedDividends(
       );
 
       const gross = quantity * event.amount;
-      const tax = gross * withholdingRate(classOf(event.ticker), event.exDate);
+      const tax =
+        gross *
+        withholdingRate(
+          classOf(event.ticker),
+          event.exDate,
+          event.paymentLabel,
+        );
 
       return {
         ticker: event.ticker,
         exDate: event.exDate,
+        paymentDate: event.paymentDate ?? event.exDate,
+        estimatedPayment: event.estimatedPayment ?? true,
         amountPerShare: event.amount,
         quantity,
         gross,
@@ -96,7 +117,7 @@ export function totalTax(dividends: ReceivedDividend[]): number {
 
 const RECENT_PAYMENTS = 6;
 
-function median(values: number[]): number {
+export function median(values: number[]): number {
   if (values.length === 0) return 0;
 
   const sorted = [...values].sort((a, b) => a - b);

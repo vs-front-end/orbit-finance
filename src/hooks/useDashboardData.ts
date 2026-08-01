@@ -1,49 +1,65 @@
 import { useEffect } from 'react';
 
-import { summarizePositions, type Currency } from '@/domain';
+import { makeFxLookup, summarizePositions, type Quote } from '@/domain';
 import { historyService } from '@/services';
 
 import {
-  useAllTransactions,
   usePortfolios,
   useQuotes,
   useUsdBrlRate,
+  useUsdBrlSeries,
 } from './queries';
+import { useAdjustedTransactions } from './useAdjustedTransactions';
 import { buildPositionViews } from './usePositionViews';
+
+function convertQuotes(quotes: Quote[] | undefined, rate: number): Quote[] {
+  return (quotes ?? []).map((quote) => ({
+    ...quote,
+    price: quote.price * rate,
+    previousClose: quote.previousClose * rate,
+  }));
+}
 
 export function useDashboardData() {
   const portfoliosQuery = usePortfolios();
-  const transactionsQuery = useAllTransactions();
-
-  const transactions = transactionsQuery.data ?? [];
-  const tickers = [
-    ...new Set(transactions.map((transaction) => transaction.ticker)),
-  ];
-  const quotesQuery = useQuotes(tickers);
+  const { transactions, isLoading: transactionsLoading } =
+    useAdjustedTransactions();
+  const quotesQuery = useQuotes();
   const rateQuery = useUsdBrlRate();
+  const fxQuery = useUsdBrlSeries();
 
   const rate = rateQuery.data ?? 0;
-  const toBRL = (value: number, currency: Currency) =>
-    currency === 'USD' ? value * rate : value;
+  const fxSeries = fxQuery.data ?? [];
+  const usdToBrlAt = makeFxLookup(fxSeries);
 
   const portfolios = portfoliosQuery.data ?? [];
 
   const perPortfolio = portfolios.map((portfolio) => {
-    const views = buildPositionViews(
-      transactions.filter((tx) => tx.portfolioId === portfolio.id),
-      quotesQuery.data,
+    const own = transactions.filter((tx) => tx.portfolioId === portfolio.id);
+    const views = buildPositionViews(own, quotesQuery.data);
+    const isUsd = portfolio.currency === 'USD';
+
+    // Custo pelo câmbio da data da compra, mercado pelo câmbio de hoje. Sem
+    // série de câmbio ainda, o dólar atual é a melhor aproximação.
+    const rateAt =
+      isUsd && fxSeries.length > 0 ? usdToBrlAt : () => (isUsd ? rate : 1);
+
+    const viewsBRL = buildPositionViews(
+      own,
+      convertQuotes(quotesQuery.data, isUsd ? rate : 1),
+      (tx) => tx.unitPrice * rateAt(tx.executedAt.slice(0, 10)),
     );
 
     return {
       portfolio,
       views,
       summary: summarizePositions(views),
+      summaryBRL: summarizePositions(viewsBRL),
     };
   });
 
-  const quotesReady = tickers.length === 0 || quotesQuery.isSuccess;
   const dataReady =
-    !portfoliosQuery.isLoading && !transactionsQuery.isLoading && quotesReady;
+    !portfoliosQuery.isLoading && !transactionsLoading && quotesQuery.isSuccess;
 
   useEffect(() => {
     if (!dataReady) return;
@@ -75,15 +91,14 @@ export function useDashboardData() {
   }, [dataReady, quotesQuery.dataUpdatedAt]);
 
   const totals = perPortfolio.reduce(
-    (acc, { portfolio, summary }) => ({
-      marketValue:
-        acc.marketValue + toBRL(summary.marketValue, portfolio.currency),
-      investedValue:
-        acc.investedValue + toBRL(summary.investedValue, portfolio.currency),
-      dailyPL: acc.dailyPL + toBRL(summary.dailyPL, portfolio.currency),
-      netPL: acc.netPL + toBRL(summary.netPL, portfolio.currency),
-      gains: acc.gains + toBRL(summary.gains, portfolio.currency),
-      losses: acc.losses + toBRL(summary.losses, portfolio.currency),
+    (acc, { summaryBRL }) => ({
+      marketValue: acc.marketValue + summaryBRL.marketValue,
+      investedValue: acc.investedValue + summaryBRL.investedValue,
+      dailyPL: acc.dailyPL + summaryBRL.dailyPL,
+      netPL: acc.netPL + summaryBRL.netPL,
+      gains: acc.gains + summaryBRL.gains,
+      losses: acc.losses + summaryBRL.losses,
+      missingQuotes: acc.missingQuotes + summaryBRL.missingQuotes,
     }),
     {
       marketValue: 0,
@@ -92,6 +107,7 @@ export function useDashboardData() {
       netPL: 0,
       gains: 0,
       losses: 0,
+      missingQuotes: 0,
     },
   );
 
@@ -113,9 +129,9 @@ export function useDashboardData() {
     usdBrlRate: rate,
     isLoading:
       portfoliosQuery.isLoading ||
-      transactionsQuery.isLoading ||
+      transactionsLoading ||
       rateQuery.isLoading ||
-      (tickers.length > 0 && quotesQuery.isLoading),
+      quotesQuery.isLoading,
     isFetchingQuotes: quotesQuery.isFetching,
     quotesUpdatedAt: quotesQuery.dataUpdatedAt,
     refetchQuotes: quotesQuery.refetch,

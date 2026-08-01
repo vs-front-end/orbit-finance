@@ -9,6 +9,7 @@ export type Position = {
 
 export type PositionView = Position & {
   quote: Quote | null;
+  hasQuote: boolean;
   marketValue: number;
   dailyPL: number;
   dailyPLPercent: number;
@@ -25,9 +26,17 @@ export type PLSummary = {
   netPLPercent: number;
   gains: number;
   losses: number;
+  missingQuotes: number;
 };
 
-export function buildPositions(transactions: Transaction[]): Position[] {
+export type PriceOf = (transaction: Transaction) => number;
+
+const nativePrice: PriceOf = (transaction) => transaction.unitPrice;
+
+export function buildPositions(
+  transactions: Transaction[],
+  priceOf: PriceOf = nativePrice,
+): Position[] {
   const sorted = [...transactions].sort((a, b) =>
     a.executedAt.localeCompare(b.executedAt),
   );
@@ -42,8 +51,9 @@ export function buildPositions(transactions: Transaction[]): Position[] {
     };
 
     if (tx.side === 'buy') {
+      const unitPrice = priceOf(tx);
       const totalCost =
-        current.quantity * current.avgPrice + tx.quantity * tx.unitPrice;
+        current.quantity * current.avgPrice + tx.quantity * unitPrice;
 
       current.quantity += tx.quantity;
       current.avgPrice = totalCost / current.quantity;
@@ -66,6 +76,7 @@ export function enrichPosition(
     return {
       ...position,
       quote: null,
+      hasQuote: false,
       marketValue: position.investedValue,
       dailyPL: 0,
       dailyPLPercent: 0,
@@ -82,6 +93,7 @@ export function enrichPosition(
   return {
     ...position,
     quote,
+    hasQuote: true,
     marketValue,
     dailyPL,
     dailyPLPercent: previousValue > 0 ? (dailyPL / previousValue) * 100 : 0,
@@ -107,6 +119,7 @@ export function summarizePositions(views: PositionView[]): PLSummary {
     netPLPercent: investedValue > 0 ? (netPL / investedValue) * 100 : 0,
     gains: sum(views.map((v) => v.netPL).filter((value) => value > 0)),
     losses: sum(views.map((v) => v.netPL).filter((value) => value < 0)),
+    missingQuotes: views.filter((view) => !view.hasQuote).length,
   };
 }
 

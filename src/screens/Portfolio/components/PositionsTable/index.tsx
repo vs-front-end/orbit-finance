@@ -153,7 +153,14 @@ export function PositionsTable({
                 )}
               </TCell>
               <TCell className='text-right font-medium'>
-                {formatMoney(view.marketValue, currency)}
+                {view.hasQuote ? (
+                  formatMoney(view.marketValue, currency)
+                ) : (
+                  <span className='text-muted'>
+                    {formatMoney(view.marketValue, currency)}
+                    <span className='ml-1 text-xs font-normal'>(custo)</span>
+                  </span>
+                )}
               </TCell>
               <TCell className='text-right'>
                 <PLValue

@@ -65,11 +65,7 @@ export function useAddTransaction() {
   return useMutation({
     mutationFn: (input: NewTransaction) =>
       portfoliosService.addTransaction(input),
-    onSuccess: (_, input) =>
-      invalidate([
-        queryKeys.allTransactions,
-        queryKeys.transactions(input.portfolioId),
-      ]),
+    onSuccess: () => invalidate([queryKeys.allTransactions]),
   });
 }
 
@@ -79,11 +75,7 @@ export function useUpdateTransaction() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateTransaction }) =>
       portfoliosService.updateTransaction(id, input),
-    onSuccess: (transaction) =>
-      invalidate([
-        queryKeys.allTransactions,
-        queryKeys.transactions(transaction.portfolioId),
-      ]),
+    onSuccess: () => invalidate([queryKeys.allTransactions]),
   });
 }
 

@@ -138,3 +138,56 @@ describe('summarizePositions', () => {
     expect(summary.losses).toBe(-200);
   });
 });
+
+describe('cotação ausente', () => {
+  it('flags the position and counts it in the summary', () => {
+    const position = {
+      ticker: 'X',
+      quantity: 10,
+      avgPrice: 5,
+      investedValue: 50,
+    };
+    const withoutQuote = enrichPosition(position, null);
+
+    expect(withoutQuote.hasQuote).toBe(false);
+    expect(withoutQuote.marketValue).toBe(50);
+    expect(summarizePositions([withoutQuote]).missingQuotes).toBe(1);
+  });
+
+  it('counts nothing when every position is priced', () => {
+    const view = enrichPosition(
+      { ticker: 'X', quantity: 10, avgPrice: 5, investedValue: 50 },
+      {
+        ticker: 'X',
+        price: 6,
+        previousClose: 5.5,
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    );
+
+    expect(view.hasQuote).toBe(true);
+    expect(summarizePositions([view]).missingQuotes).toBe(0);
+  });
+});
+
+describe('preço convertido', () => {
+  it('applies the price mapper to the average cost', () => {
+    const [position] = buildPositions(
+      [
+        {
+          id: '1',
+          portfolioId: 'p1',
+          ticker: 'AAPL',
+          side: 'buy',
+          quantity: 10,
+          unitPrice: 100,
+          executedAt: '2024-01-10T12:00:00.000Z',
+        },
+      ],
+      (tx) => tx.unitPrice * 5,
+    );
+
+    expect(position.avgPrice).toBe(500);
+    expect(position.investedValue).toBe(5000);
+  });
+});
