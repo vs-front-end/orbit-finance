@@ -51,6 +51,11 @@ function formatChartDate(timestamp: number): string {
   }).format(new Date(timestamp));
 }
 
+const VIEW_TITLE: Record<'patrimony' | 'portfolios', string> = {
+  patrimony: 'Evolução do patrimônio',
+  portfolios: 'Evolução por carteira',
+};
+
 export function EvolutionChartCard({
   view,
   onViewChange,
@@ -62,7 +67,7 @@ export function EvolutionChartCard({
     <Card className='gap-3 py-3 sm:py-4'>
       <CardHeader className='px-4 sm:px-5'>
         <div className='flex flex-wrap items-center justify-between gap-2'>
-          <CardTitle className='text-sm'>Evolução</CardTitle>
+          <CardTitle className='text-sm'>{VIEW_TITLE[view]}</CardTitle>
           <div className='flex flex-wrap items-center gap-2'>
             <Select
               value={view}

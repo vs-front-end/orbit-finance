@@ -254,3 +254,95 @@ export function totalsInBRL(
     { receivedBRL: 0, taxBRL: 0 },
   );
 }
+
+export type MonthlyDividend = { month: string; total: number };
+
+type PaidSlice = { paymentDate: string; received: number };
+
+function shiftMonth(ym: string, delta: number): string {
+  const date = new Date(`${ym}-01T00:00:00Z`);
+  date.setUTCMonth(date.getUTCMonth() + delta);
+  return date.toISOString().slice(0, 7);
+}
+
+function lastCompleteMonth(today: string): string {
+  return shiftMonth(today.slice(0, 7), -1);
+}
+
+function monthRange(from: string, to: string): string[] {
+  if (from > to) return [];
+
+  const months: string[] = [];
+  for (let cursor = from; cursor <= to; cursor = shiftMonth(cursor, 1)) {
+    months.push(cursor);
+  }
+  return months;
+}
+
+function totalsByMonth(dividends: PaidSlice[]): Map<string, number> {
+  const byMonth = new Map<string, number>();
+
+  for (const dividend of dividends) {
+    const month = dividend.paymentDate.slice(0, 7);
+    byMonth.set(month, (byMonth.get(month) ?? 0) + dividend.received);
+  }
+
+  return byMonth;
+}
+
+export function averageMonthlyReceived(
+  dividends: PaidSlice[],
+  today: string,
+): number {
+  if (dividends.length === 0) return 0;
+
+  const end = lastCompleteMonth(today);
+  const first = [...dividends]
+    .map((dividend) => dividend.paymentDate.slice(0, 7))
+    .sort()[0];
+
+  if (!first || first > end) return 0;
+
+  const months = monthRange(first, end);
+  const total = dividends
+    .filter((dividend) => dividend.paymentDate.slice(0, 7) <= end)
+    .reduce((sum, dividend) => sum + dividend.received, 0);
+
+  return months.length > 0 ? total / months.length : 0;
+}
+
+export function monthlyReceivedSeries(
+  dividends: PaidSlice[],
+  today: string,
+  window = 12,
+): MonthlyDividend[] {
+  const end = lastCompleteMonth(today);
+  const byMonth = totalsByMonth(dividends);
+  const start = shiftMonth(end, -(window - 1));
+
+  return monthRange(start, end).map((month) => ({
+    month,
+    total: byMonth.get(month) ?? 0,
+  }));
+}
+
+export type DividendPayer = { ticker: string; received: number };
+
+export function topDividendPayers(
+  dividends: Array<PaidSlice & { ticker: string }>,
+  limit = 5,
+): DividendPayer[] {
+  const byTicker = new Map<string, number>();
+
+  for (const dividend of dividends) {
+    byTicker.set(
+      dividend.ticker,
+      (byTicker.get(dividend.ticker) ?? 0) + dividend.received,
+    );
+  }
+
+  return [...byTicker.entries()]
+    .map(([ticker, received]) => ({ ticker, received }))
+    .sort((a, b) => b.received - a.received)
+    .slice(0, limit);
+}

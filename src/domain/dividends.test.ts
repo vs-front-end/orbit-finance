@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 import type { AssetClass, Transaction, TransactionSide } from './types';
 
 import {
+  averageMonthlyReceived,
   computeReceivedDividends,
   estimateMonthlyAmountPerShare,
   makeFxLookup,
+  monthlyReceivedSeries,
   projectPendingDividends,
+  topDividendPayers,
   totalReceived,
   totalsInBRL,
   withholdingRate,
@@ -365,5 +368,61 @@ describe('conferência contra a B3', () => {
 
   it('matches the PSSA3 net value from the B3 statement', () => {
     expect(jcp2026(19, 0.512803, '2027-04-30').received).toBeCloseTo(8.04, 2);
+  });
+});
+
+describe('monthlyReceivedSeries', () => {
+  const today = '2026-08-01';
+
+  it('fills zeros through last complete month', () => {
+    const series = monthlyReceivedSeries(
+      [
+        { paymentDate: '2026-03-10', received: 3.44 },
+        { paymentDate: '2026-07-24', received: 49.4 },
+      ],
+      today,
+      5,
+    );
+
+    expect(series.map((entry) => entry.month)).toEqual([
+      '2026-03',
+      '2026-04',
+      '2026-05',
+      '2026-06',
+      '2026-07',
+    ]);
+    expect(series.map((entry) => entry.total)).toEqual([
+      3.44, 0, 0, 0, 49.4,
+    ]);
+  });
+});
+
+describe('averageMonthlyReceived', () => {
+  it('divides total by months since the first payment through last complete month', () => {
+    expect(
+      averageMonthlyReceived(
+        [
+          { paymentDate: '2026-03-10', received: 10 },
+          { paymentDate: '2026-07-24', received: 40 },
+          { paymentDate: '2026-08-12', received: 100 },
+        ],
+        '2026-08-01',
+      ),
+    ).toBeCloseTo(10, 6);
+  });
+});
+
+describe('topDividendPayers', () => {
+  it('ranks tickers by received total', () => {
+    expect(
+      topDividendPayers([
+        { ticker: 'XPML11', paymentDate: '2026-07-24', received: 11.96 },
+        { ticker: 'BTLG11', paymentDate: '2026-07-24', received: 10.53 },
+        { ticker: 'XPML11', paymentDate: '2026-06-25', received: 9.2 },
+      ]),
+    ).toEqual([
+      { ticker: 'XPML11', received: 21.16 },
+      { ticker: 'BTLG11', received: 10.53 },
+    ]);
   });
 });

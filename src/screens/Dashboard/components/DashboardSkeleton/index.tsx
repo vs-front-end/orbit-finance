@@ -24,6 +24,13 @@ export function DashboardSkeleton() {
       </div>
 
       <Skeleton className='h-72 w-full' />
+
+      <div className='grid gap-3 sm:gap-4 xl:grid-cols-2'>
+        <Skeleton className='h-72 w-full' />
+        <Skeleton className='h-72 w-full' />
+      </div>
+
+      <Skeleton className='h-28 w-full' />
     </div>
   );
 }

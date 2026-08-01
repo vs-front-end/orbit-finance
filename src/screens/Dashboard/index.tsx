@@ -2,9 +2,12 @@ import { useState } from 'react';
 
 import { useDashboardHistory, useDashboardOverview } from '@/hooks';
 
+import { DashboardAllocation } from './components/DashboardAllocation';
 import { DashboardEmptyState } from './components/DashboardEmptyState';
 import { DashboardEvolution } from './components/DashboardEvolution';
 import { DashboardHeader } from './components/DashboardHeader';
+import { DashboardHighlights } from './components/DashboardHighlights';
+import { DashboardProventos } from './components/DashboardProventos';
 import { DashboardSkeleton } from './components/DashboardSkeleton';
 import { DashboardSummary } from './components/DashboardSummary';
 import { PortfolioCard } from './PortfolioCard';
@@ -40,7 +43,6 @@ export function Dashboard() {
           />
         ))}
       </div>
-
       <DashboardEvolution
         period={period}
         onPeriodChange={setPeriod}
@@ -48,6 +50,20 @@ export function Dashboard() {
         consolidatedSeries={history.consolidatedSeries}
         portfolioSeries={history.portfolioSeries}
       />
+
+      <div className='grid gap-3 sm:gap-4 xl:grid-cols-2'>
+        <DashboardProventos
+          series={data.dividends.monthlySeries}
+          monthlyAverage={data.dividends.monthlyAverageBRL}
+        />
+        <DashboardHighlights
+          gainers={data.topGainers}
+          losers={data.topLosers}
+          payers={data.dividends.topPayers}
+        />
+      </div>
+
+      <DashboardAllocation slices={data.allocations.byPortfolio} />
     </div>
   );
 }

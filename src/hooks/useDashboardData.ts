@@ -123,10 +123,19 @@ export function useDashboardData() {
         : 0,
   };
 
+  const byPortfolio = perPortfolio
+    .map(({ portfolio, summaryBRL }) => ({
+      label: portfolio.name,
+      value: summaryBRL.marketValue,
+    }))
+    .filter((slice) => slice.value > 0)
+    .sort((a, b) => b.value - a.value);
+
   return {
     perPortfolio,
     consolidated,
     usdBrlRate: rate,
+    allocations: { byPortfolio },
     isLoading:
       portfoliosQuery.isLoading ||
       transactionsLoading ||
