@@ -65,6 +65,56 @@ body {
   }
 }
 
+.login-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.login-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.32;
+  will-change: transform;
+}
+
+.login-blob-1 {
+  width: 28rem;
+  height: 28rem;
+  top: -12%;
+  left: -8%;
+  background: var(--color-primary);
+}
+
+.login-blob-2 {
+  width: 24rem;
+  height: 24rem;
+  right: -10%;
+  bottom: -18%;
+  background: var(--color-secondary);
+}
+
+.login-blob-3 {
+  width: 20rem;
+  height: 20rem;
+  top: 42%;
+  left: 55%;
+  background: var(--color-primary-text);
+}
+
+.login-card {
+  background: color-mix(in srgb, var(--color-surface) 52%, transparent);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-color: color-mix(in srgb, var(--color-foreground) 14%, transparent);
+  box-shadow:
+    0 8px 32px color-mix(in srgb, var(--color-primary) 12%, transparent),
+    0 24px 60px color-mix(in srgb, var(--color-background) 55%, transparent);
+}
+
 .rgb-border {
   border-radius: 0.7rem;
   border: 1.5px solid transparent;
