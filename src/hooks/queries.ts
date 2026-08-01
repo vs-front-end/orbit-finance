@@ -2,6 +2,7 @@ import {
   keepPreviousData,
   useQuery,
   useQueryClient,
+  type UseQueryResult,
 } from '@tanstack/react-query';
 
 import type { Portfolio } from '@/domain';
@@ -82,13 +83,30 @@ export function useAllTickers(): string[] {
   ].sort();
 }
 
+// Cotações/proventos/splits dependem do catálogo pra montar o símbolo Yahoo
+// (ex.: BTC → BTC-USD). Sem assets prontos a query fica disabled — e disabled
+// no TanStack reporta isLoading=false, então o gating tem que ser explícito.
+export function useMarketDataEnabled(): boolean {
+  const assetsQuery = useAssets();
+  const tickers = useAllTickers();
+  return assetsQuery.isSuccess && tickers.length > 0;
+}
+
+export function isAwaiting(
+  query: Pick<UseQueryResult, 'isFetched'>,
+  enabled: boolean,
+): boolean {
+  return enabled && !query.isFetched;
+}
+
 export function useQuotes() {
   const tickers = useAllTickers();
+  const enabled = useMarketDataEnabled();
 
   return useQuery({
     queryKey: queryKeys.quotes(tickers),
     queryFn: () => quotesService.getQuotes(tickers),
-    enabled: tickers.length > 0,
+    enabled,
     ...sessionCacheOptions,
     placeholderData: keepPreviousData,
   });
@@ -96,11 +114,12 @@ export function useQuotes() {
 
 export function useDividendEvents() {
   const tickers = useAllTickers();
+  const enabled = useMarketDataEnabled();
 
   return useQuery({
     queryKey: queryKeys.dividends(tickers),
     queryFn: () => dividendsService.getDividends(tickers),
-    enabled: tickers.length > 0,
+    enabled,
     ...sessionCacheOptions,
     placeholderData: keepPreviousData,
   });
@@ -108,11 +127,12 @@ export function useDividendEvents() {
 
 export function useDividendPayments() {
   const tickers = useAllTickers();
+  const enabled = useMarketDataEnabled();
 
   return useQuery({
     queryKey: queryKeys.payments(tickers),
     queryFn: () => dividendsService.getPayments(tickers),
-    enabled: tickers.length > 0,
+    enabled,
     ...sessionCacheOptions,
     placeholderData: keepPreviousData,
   });
@@ -120,11 +140,12 @@ export function useDividendPayments() {
 
 export function useSplits() {
   const tickers = useAllTickers();
+  const enabled = useMarketDataEnabled();
 
   return useQuery({
     queryKey: queryKeys.splits(tickers),
     queryFn: () => dividendsService.getSplits(tickers),
-    enabled: tickers.length > 0,
+    enabled,
     ...sessionCacheOptions,
     placeholderData: keepPreviousData,
   });

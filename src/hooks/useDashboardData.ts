@@ -4,6 +4,9 @@ import { makeFxLookup, summarizePositions, type Quote } from '@/domain';
 import { historyService } from '@/services';
 
 import {
+  isAwaiting,
+  useAssets,
+  useMarketDataEnabled,
   usePortfolios,
   useQuotes,
   useUsdBrlRate,
@@ -21,12 +24,14 @@ function convertQuotes(quotes: Quote[] | undefined, rate: number): Quote[] {
 }
 
 export function useDashboardData() {
+  const assetsQuery = useAssets();
   const portfoliosQuery = usePortfolios();
   const { transactions, isLoading: transactionsLoading } =
     useAdjustedTransactions();
   const quotesQuery = useQuotes();
   const rateQuery = useUsdBrlRate();
   const fxQuery = useUsdBrlSeries();
+  const marketDataEnabled = useMarketDataEnabled();
 
   const rate = rateQuery.data ?? 0;
   const fxSeries = fxQuery.data ?? [];
@@ -59,7 +64,9 @@ export function useDashboardData() {
   });
 
   const dataReady =
-    !portfoliosQuery.isLoading && !transactionsLoading && quotesQuery.isSuccess;
+    !portfoliosQuery.isLoading &&
+    !transactionsLoading &&
+    (!marketDataEnabled || quotesQuery.isSuccess);
 
   useEffect(() => {
     if (!dataReady) return;
@@ -137,10 +144,12 @@ export function useDashboardData() {
     usdBrlRate: rate,
     allocations: { byPortfolio },
     isLoading:
+      assetsQuery.isLoading ||
       portfoliosQuery.isLoading ||
       transactionsLoading ||
       rateQuery.isLoading ||
-      quotesQuery.isLoading,
+      fxQuery.isLoading ||
+      isAwaiting(quotesQuery, marketDataEnabled),
     isFetchingQuotes: quotesQuery.isFetching,
     quotesUpdatedAt: quotesQuery.dataUpdatedAt,
     refetchQuotes: quotesQuery.refetch,

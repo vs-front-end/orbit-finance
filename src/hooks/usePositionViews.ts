@@ -8,7 +8,7 @@ import {
   type Transaction,
 } from '@/domain';
 
-import { useQuotes } from './queries';
+import { useQuotes, isAwaiting, useMarketDataEnabled } from './queries';
 import { useAdjustedTransactions } from './useAdjustedTransactions';
 
 export function buildPositionViews(
@@ -25,8 +25,10 @@ export function buildPositionViews(
 }
 
 export function usePortfolioPositions(portfolioId: string) {
-  const { transactions: all, isLoading } = useAdjustedTransactions();
+  const { transactions: all, isLoading: transactionsLoading } =
+    useAdjustedTransactions();
   const quotesQuery = useQuotes();
+  const marketDataEnabled = useMarketDataEnabled();
 
   const transactions = all.filter((tx) => tx.portfolioId === portfolioId);
   const views = buildPositionViews(transactions, quotesQuery.data);
@@ -35,7 +37,8 @@ export function usePortfolioPositions(portfolioId: string) {
     views,
     summary: summarizePositions(views),
     transactions,
-    isLoading,
+    isLoading:
+      transactionsLoading || isAwaiting(quotesQuery, marketDataEnabled),
     isFetchingQuotes: quotesQuery.isFetching,
     quotesUpdatedAt: quotesQuery.dataUpdatedAt,
     refetchQuotes: quotesQuery.refetch,

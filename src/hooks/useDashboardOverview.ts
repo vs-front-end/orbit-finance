@@ -15,8 +15,10 @@ import { findAsset } from '@/services';
 
 import { useDashboardData } from './useDashboardData';
 import {
+  isAwaiting,
   useDividendEvents,
   useDividendPayments,
+  useMarketDataEnabled,
   usePortfolios,
   useStoredDividends,
   useUsdBrlRate,
@@ -87,6 +89,7 @@ export function useDashboardOverview() {
   const portfoliosQuery = usePortfolios();
   const rateQuery = useUsdBrlRate();
   const fxQuery = useUsdBrlSeries();
+  const marketDataEnabled = useMarketDataEnabled();
 
   const { transactions, isLoading: transactionsLoading } =
     useAdjustedTransactions();
@@ -194,9 +197,16 @@ export function useDashboardOverview() {
       .reverse()
       .slice(0, 5),
     totalPLBRL: dashboard.consolidated.netPL + realizedBRL,
-    isFetchingQuotes: dashboard.isFetchingQuotes || eventsQuery.isFetching,
+    isFetchingQuotes:
+      dashboard.isFetchingQuotes ||
+      eventsQuery.isFetching ||
+      paymentsQuery.isFetching,
     refetchQuotes: async () => {
-      await Promise.all([dashboard.refetchQuotes(), eventsQuery.refetch()]);
+      await Promise.all([
+        dashboard.refetchQuotes(),
+        eventsQuery.refetch(),
+        paymentsQuery.refetch(),
+      ]);
     },
     isLoading:
       dashboard.isLoading ||
@@ -204,6 +214,8 @@ export function useDashboardOverview() {
       transactionsLoading ||
       rateQuery.isLoading ||
       fxQuery.isLoading ||
-      eventsQuery.isLoading,
+      isAwaiting(eventsQuery, marketDataEnabled) ||
+      isAwaiting(paymentsQuery, marketDataEnabled) ||
+      ledgerQuery.isLoading,
   };
 }

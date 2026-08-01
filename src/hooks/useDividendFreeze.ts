@@ -14,6 +14,7 @@ import {
   queryKeys,
   useDividendEvents,
   useDividendPayments,
+  useMarketDataEnabled,
   usePortfolios,
   useStoredDividends,
 } from './queries';
@@ -29,13 +30,14 @@ export function useDividendFreeze() {
   const eventsQuery = useDividendEvents();
   const paymentsQuery = useDividendPayments();
   const ledgerQuery = useStoredDividends();
+  const marketDataEnabled = useMarketDataEnabled();
   const attempted = useRef(new Set<string>());
 
   const ready =
     !portfoliosQuery.isLoading &&
     !transactionsLoading &&
-    eventsQuery.isSuccess &&
-    paymentsQuery.isSuccess &&
+    (!marketDataEnabled ||
+      (eventsQuery.isSuccess && paymentsQuery.isSuccess)) &&
     ledgerQuery.isSuccess;
 
   const portfolios = portfoliosQuery.data ?? [];
