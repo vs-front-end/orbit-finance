@@ -44,6 +44,7 @@ export function buildPositions(transactions: Transaction[]): Position[] {
     if (tx.side === 'buy') {
       const totalCost =
         current.quantity * current.avgPrice + tx.quantity * tx.unitPrice;
+        
       current.quantity += tx.quantity;
       current.avgPrice = totalCost / current.quantity;
     } else {

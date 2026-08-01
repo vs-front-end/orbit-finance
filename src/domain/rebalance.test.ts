@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import { buildRebalancePlan } from './rebalance';
 
 describe('buildRebalancePlan', () => {
@@ -17,11 +16,13 @@ describe('buildRebalancePlan', () => {
     expect(plan.targetSum).toBe(100);
 
     const [a, b] = plan.rows;
+
     expect(a).toMatchObject({
       currentPercent: 70,
       targetValue: 5000,
       diff: -2000,
     });
+    
     expect(b).toMatchObject({
       currentPercent: 30,
       targetValue: 5000,

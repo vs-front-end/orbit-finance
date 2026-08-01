@@ -1,9 +1,6 @@
 import { useState } from 'react';
-
 import { cn } from '@stellar-ui-kit/shared';
-
 import { formatPercent } from '@/utils';
-
 import { CHART_BG, CHART_STROKE, chartColor } from './chartColors';
 
 type AllocationSlice = { label: string; value: number };
@@ -25,11 +22,14 @@ export function DonutChart({ title, slices, centerLabel }: DonutChartProps) {
     (AllocationSlice & { fraction: number; offset: number; index: number })[]
   >((acc, slice, index) => {
     const fraction = total > 0 ? slice.value / total : 0;
+
     const offset =
       acc.length > 0
         ? acc[acc.length - 1].offset + acc[acc.length - 1].fraction
         : 0;
+
     acc.push({ ...slice, fraction, offset, index });
+
     return acc;
   }, []);
 
@@ -68,12 +68,14 @@ export function DonutChart({ title, slices, centerLabel }: DonutChartProps) {
             />
           ))}
         </svg>
+
         <span className='pointer-events-none absolute inset-4 flex flex-col items-center justify-center text-center'>
           {hovered !== null && arcs[hovered] ? (
             <>
               <span className='max-w-full truncate text-xs text-muted'>
                 {arcs[hovered].label}
               </span>
+
               <span className='text-sm font-semibold tabular-nums'>
                 {formatPercent(arcs[hovered].fraction * 100, false)}
               </span>
@@ -97,9 +99,11 @@ export function DonutChart({ title, slices, centerLabel }: DonutChartProps) {
                 chartColor(CHART_BG, arc.index),
               )}
             />
+
             <span className='min-w-0 flex-1 truncate text-muted'>
               {arc.label}
             </span>
+
             <span className='shrink-0 tabular-nums font-medium'>
               {formatPercent(arc.fraction * 100, false)}
             </span>

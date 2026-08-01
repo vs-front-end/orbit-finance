@@ -10,7 +10,6 @@ import { usePortfolio } from '@/hooks';
 
 import { InvestmentView } from './components/InvestmentView';
 import { PortfolioSkeleton } from './components/PortfolioSkeleton';
-import { WatchlistView } from './components/WatchlistView';
 
 export function PortfolioScreen({ portfolioId }: { portfolioId: string }) {
   const { data: portfolio, isLoading } = usePortfolio(portfolioId);
@@ -35,9 +34,5 @@ export function PortfolioScreen({ portfolioId }: { portfolioId: string }) {
     );
   }
 
-  return portfolio.kind === 'investment' ? (
-    <InvestmentView portfolio={portfolio} />
-  ) : (
-    <WatchlistView portfolio={portfolio} />
-  );
+  return <InvestmentView portfolio={portfolio} />;
 }

@@ -16,7 +16,9 @@ export function useDashboardData() {
   const transactionsQuery = useAllTransactions();
 
   const transactions = transactionsQuery.data ?? [];
-  const tickers = [...new Set(transactions.map((tx) => tx.ticker))];
+  const tickers = [
+    ...new Set(transactions.map((transaction) => transaction.ticker)),
+  ];
   const quotesQuery = useQuotes(tickers);
   const rateQuery = useUsdBrlRate();
 
@@ -24,9 +26,7 @@ export function useDashboardData() {
   const toBRL = (value: number, currency: Currency) =>
     currency === 'USD' ? value * rate : value;
 
-  const portfolios = (portfoliosQuery.data ?? []).filter(
-    (p) => p.kind === 'investment',
-  );
+  const portfolios = portfoliosQuery.data ?? [];
 
   const perPortfolio = portfolios.map((portfolio) => {
     const views = buildPositionViews(

@@ -32,6 +32,7 @@ describe('computeRealizedPL', () => {
         executedAt: '2026-02-01T00:00:00.000Z',
       }),
     ]);
+
     expect(result).toBe(25);
   });
 
@@ -51,6 +52,7 @@ describe('computeRealizedPL', () => {
         executedAt: '2026-02-01T00:00:00.000Z',
       }),
     ]);
+
     expect(result).toBe(50);
   });
 
@@ -64,6 +66,7 @@ describe('computeRealizedPL', () => {
         executedAt: '2026-02-01T00:00:00.000Z',
       }),
     ]);
+
     expect(result).toBe(-20);
   });
 });

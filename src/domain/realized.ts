@@ -4,6 +4,7 @@ export function computeRealizedPL(transactions: Transaction[]): number {
   const sorted = [...transactions].sort((a, b) =>
     a.executedAt.localeCompare(b.executedAt),
   );
+
   const state = new Map<string, { quantity: number; avgPrice: number }>();
   let realized = 0;
 
@@ -13,7 +14,9 @@ export function computeRealizedPL(transactions: Transaction[]): number {
     if (tx.side === 'buy') {
       const totalCost =
         current.quantity * current.avgPrice + tx.quantity * tx.unitPrice;
+
       current.quantity += tx.quantity;
+
       current.avgPrice =
         current.quantity > 0 ? totalCost / current.quantity : 0;
     } else {

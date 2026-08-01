@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { AssetClass, Transaction, TransactionSide } from './types';
 
 import {
   computeReceivedDividends,
@@ -10,7 +11,6 @@ import {
   withholdingRate,
   type DividendEvent,
 } from './dividends';
-import type { AssetClass, Transaction, TransactionSide } from './types';
 
 function tx(
   ticker: string,
@@ -60,6 +60,7 @@ describe('computeReceivedDividends', () => {
     );
 
     expect(received).toHaveLength(2);
+
     expect(received[0]).toMatchObject({
       exDate: '2026-04-01',
       quantity: 100,
@@ -126,6 +127,7 @@ describe('totalReceived', () => {
       events,
       asFii,
     );
+
     expect(totalReceived(received)).toBeCloseTo(20, 10);
   });
 });
@@ -179,6 +181,7 @@ describe('estimateMonthlyAmountPerShare', () => {
       ...monthlyFii,
       { ticker: 'MXRF11', exDate: '2026-06-02', amount: 0.1 },
     ];
+
     expect(estimateMonthlyAmountPerShare(withJune, today)).toBe(0);
   });
 
@@ -187,6 +190,7 @@ describe('estimateMonthlyAmountPerShare', () => {
       { ticker: 'PETR4', exDate: '2024-05-10', amount: 2 },
       { ticker: 'PETR4', exDate: '2026-05-10', amount: 2 },
     ];
+
     expect(estimateMonthlyAmountPerShare(mayOnly, today)).toBe(0);
   });
 
@@ -195,6 +199,7 @@ describe('estimateMonthlyAmountPerShare', () => {
       { ticker: 'PETR4', exDate: '2024-06-20', amount: 1 },
       { ticker: 'PETR4', exDate: '2025-06-20', amount: 1.2 },
     ];
+
     expect(estimateMonthlyAmountPerShare(juneEachYear, today)).toBeCloseTo(
       1.1,
       6,
@@ -208,12 +213,14 @@ describe('projectPendingDividends', () => {
       { ticker: 'AAPL', exDate: '2024-06-20', amount: 1 },
       { ticker: 'AAPL', exDate: '2025-06-20', amount: 1 },
     ];
+
     const pending = projectPendingDividends(
       events,
       [{ ticker: 'AAPL', quantity: 10 }],
       asUs,
       '2026-06-14',
     );
+
     expect(pending).toHaveLength(1);
     expect(pending[0].gross).toBeCloseTo(10, 6);
     expect(pending[0].tax).toBeCloseTo(3, 6);
@@ -224,12 +231,14 @@ describe('projectPendingDividends', () => {
     const events: DividendEvent[] = [
       { ticker: 'PETR4', exDate: '2025-05-10', amount: 2 },
     ];
+
     const pending = projectPendingDividends(
       events,
       [{ ticker: 'PETR4', quantity: 100 }],
       asUs,
       '2026-06-14',
     );
+
     expect(pending).toHaveLength(0);
   });
 });
@@ -244,12 +253,14 @@ describe('totalsInBRL', () => {
       ],
       asUs,
     );
+
     const fx = makeFxLookup([
       { date: '2026-03-01', rate: 5 },
       { date: '2026-04-01', rate: 6 },
     ]);
 
     const { receivedBRL, taxBRL } = totalsInBRL(received, fx);
+
     expect(receivedBRL).toBeCloseTo(770, 6);
     expect(taxBRL).toBeCloseTo(330, 6);
   });

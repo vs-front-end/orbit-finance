@@ -36,9 +36,7 @@ export function useDashboardOverview() {
   const usdToBrlAt = makeFxLookup(fxQuery.data ?? []);
   const today = new Date().toISOString().slice(0, 10);
 
-  const investmentPortfolios = (portfoliosQuery.data ?? []).filter(
-    (portfolio) => portfolio.kind === 'investment',
-  );
+  const investmentPortfolios = portfoliosQuery.data ?? [];
 
   let receivedBRL = 0;
   let realizedBRL = 0;

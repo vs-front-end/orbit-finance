@@ -23,6 +23,7 @@ export function buildRebalancePlan<T extends RebalanceWeights>(
 
   const rows = items.map((item) => {
     const targetValue = (item.targetPercent / 100) * plannedTotal;
+
     return {
       ...item,
       currentPercent:

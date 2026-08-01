@@ -18,12 +18,7 @@ import {
   SelectValue,
 } from '@stellar-ui-kit/web';
 
-import {
-  currencySchema,
-  portfolioKindSchema,
-  type Currency,
-  type PortfolioKind,
-} from '@/domain';
+import { currencySchema, type Currency } from '@/domain';
 
 type NewPortfolioDialogProps = {
   open: boolean;
@@ -37,12 +32,11 @@ export function NewPortfolioDialog({
   const createPortfolio = useCreatePortfolio();
 
   const [name, setName] = useState('');
-  const [kind, setKind] = useState<PortfolioKind>('investment');
   const [currency, setCurrency] = useState<Currency>('BRL');
 
   const handleCreate = () => {
     createPortfolio.mutate(
-      { name: name.trim(), kind, currency },
+      { name: name.trim(), currency },
       {
         onSuccess: () => {
           setName('');
@@ -58,8 +52,7 @@ export function NewPortfolioDialog({
         <DialogHeader>
           <DialogTitle>Nova carteira</DialogTitle>
           <DialogDescription>
-            Carteira de investimento acompanha posições e P/L; watchlist só
-            acompanha preços.
+            Organize suas posições e acompanhe o P/L.
           </DialogDescription>
         </DialogHeader>
 
@@ -72,42 +65,22 @@ export function NewPortfolioDialog({
             required
           />
 
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label>Tipo</Label>
-              <Select
-                value={kind}
-                onValueChange={(value) =>
-                  setKind(portfolioKindSchema.parse(value))
-                }
-              >
-                <SelectTrigger className='w-full'>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='investment'>Investimento</SelectItem>
-                  <SelectItem value='watchlist'>Watchlist</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className='space-y-2'>
-              <Label>Moeda</Label>
-              <Select
-                value={currency}
-                onValueChange={(value) =>
-                  setCurrency(currencySchema.parse(value))
-                }
-              >
-                <SelectTrigger className='w-full'>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='BRL'>BRL (R$)</SelectItem>
-                  <SelectItem value='USD'>USD ($)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className='space-y-2'>
+            <Label>Moeda</Label>
+            <Select
+              value={currency}
+              onValueChange={(value) =>
+                setCurrency(currencySchema.parse(value))
+              }
+            >
+              <SelectTrigger className='w-full'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='BRL'>BRL (R$)</SelectItem>
+                <SelectItem value='USD'>USD ($)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

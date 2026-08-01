@@ -3,20 +3,16 @@ import { z } from 'zod';
 import {
   portfolioSchema,
   transactionSchema,
-  watchItemSchema,
   type Currency,
   type Portfolio,
-  type PortfolioKind,
   type Transaction,
   type TransactionSide,
-  type WatchItem,
 } from '@/domain';
 
 import { supabase } from '../supabase';
 
 export type NewPortfolio = {
   name: string;
-  kind: PortfolioKind;
   currency: Currency;
 };
 
@@ -51,9 +47,6 @@ export type PortfoliosService = {
   ) => Promise<Transaction>;
   removeTransaction: (id: string) => Promise<void>;
   removePosition: (portfolioId: string, ticker: string) => Promise<void>;
-  listWatchItems: (portfolioId: string) => Promise<WatchItem[]>;
-  addWatchItem: (portfolioId: string, ticker: string) => Promise<WatchItem>;
-  removeWatchItem: (id: string) => Promise<void>;
 };
 
 function unwrap<T>(result: {
@@ -67,14 +60,23 @@ function unwrap<T>(result: {
 export const portfoliosService: PortfoliosService = {
   async list() {
     const rows = unwrap(
-      await supabase.from('portfolios').select('*').order('createdAt'),
+      await supabase
+        .from('portfolios')
+        .select('*')
+        .eq('kind', 'investment')
+        .order('createdAt'),
     );
     return z.array(portfolioSchema).parse(rows);
   },
 
   async get(id) {
     const row = unwrap(
-      await supabase.from('portfolios').select('*').eq('id', id).maybeSingle(),
+      await supabase
+        .from('portfolios')
+        .select('*')
+        .eq('id', id)
+        .eq('kind', 'investment')
+        .maybeSingle(),
     );
     return row ? portfolioSchema.parse(row) : null;
   },
@@ -83,6 +85,7 @@ export const portfoliosService: PortfoliosService = {
     const portfolio = {
       id: crypto.randomUUID(),
       ...input,
+      kind: 'investment',
       createdAt: new Date().toISOString(),
     };
     const row = unwrap(
@@ -98,10 +101,7 @@ export const portfoliosService: PortfoliosService = {
   },
 
   async remove(id) {
-    await Promise.all([
-      supabase.from('transactions').delete().eq('portfolioId', id),
-      supabase.from('watch_items').delete().eq('portfolioId', id),
-    ]);
+    await supabase.from('transactions').delete().eq('portfolioId', id);
     unwrap(await supabase.from('portfolios').delete().eq('id', id).select());
   },
 
@@ -153,32 +153,5 @@ export const portfoliosService: PortfoliosService = {
         .eq('ticker', ticker)
         .select(),
     );
-  },
-
-  async listWatchItems(portfolioId) {
-    const rows = unwrap(
-      await supabase
-        .from('watch_items')
-        .select('*')
-        .eq('portfolioId', portfolioId),
-    );
-    return z.array(watchItemSchema).parse(rows);
-  },
-
-  async addWatchItem(portfolioId, ticker) {
-    const item = {
-      id: crypto.randomUUID(),
-      portfolioId,
-      ticker: ticker.toUpperCase(),
-      addedAt: new Date().toISOString(),
-    };
-    const row = unwrap(
-      await supabase.from('watch_items').insert(item).select().single(),
-    );
-    return watchItemSchema.parse(row);
-  },
-
-  async removeWatchItem(id) {
-    unwrap(await supabase.from('watch_items').delete().eq('id', id).select());
   },
 };

@@ -15,11 +15,6 @@ export function PortfolioHeader({ portfolio, actions }: PortfolioHeaderProps) {
           {portfolio.name}
         </Text>
         <Badge variant='outline'>{portfolio.currency}</Badge>
-        <Badge
-          variant={portfolio.kind === 'investment' ? 'secondary' : 'warning'}
-        >
-          {portfolio.kind === 'investment' ? 'Investimento' : 'Watchlist'}
-        </Badge>
       </div>
       {actions && (
         <div className='ml-auto flex items-center justify-end gap-2'>

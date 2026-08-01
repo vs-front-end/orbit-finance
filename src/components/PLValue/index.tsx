@@ -1,5 +1,4 @@
 import { cn } from '@stellar-ui-kit/shared';
-
 import type { Currency } from '@/domain';
 import { formatMoney, formatPercent } from '@/utils';
 
@@ -11,20 +10,22 @@ type PLValueProps = {
 };
 
 export function PLValue({ value, currency, percent, className }: PLValueProps) {
-  const color =
-    value > 0
-      ? 'text-success-text'
-      : value < 0
-        ? 'text-error-text'
-        : 'text-muted';
+  const getColor = (value: number) => {
+    if (value > 0) return 'text-success-text';
+    if (value < 0) return 'text-error-text';
+    return 'text-muted';
+  };
 
   return (
-    <span className={cn('tabular-nums font-medium', color, className)}>
+    <span
+      className={cn('tabular-nums font-medium', getColor(value), className)}
+    >
       <span className='whitespace-nowrap'>
         {currency !== undefined
           ? formatMoney(value, currency, true)
           : formatPercent(value)}
       </span>
+
       {currency !== undefined && percent !== undefined && (
         <span className='ml-1 whitespace-nowrap text-[0.72em] opacity-80'>
           {formatPercent(percent)}

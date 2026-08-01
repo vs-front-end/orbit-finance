@@ -120,27 +120,3 @@ export function useSetTargets() {
     onSuccess: () => invalidate([queryKeys.targets]),
   });
 }
-
-export function useAddWatchItem() {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: ({
-      portfolioId,
-      ticker,
-    }: {
-      portfolioId: string;
-      ticker: string;
-    }) => portfoliosService.addWatchItem(portfolioId, ticker),
-    onSuccess: (item) => invalidate([queryKeys.watchItems(item.portfolioId)]),
-  });
-}
-
-export function useRemoveWatchItem(portfolioId: string) {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: (id: string) => portfoliosService.removeWatchItem(id),
-    onSuccess: () => invalidate([queryKeys.watchItems(portfolioId)]),
-  });
-}

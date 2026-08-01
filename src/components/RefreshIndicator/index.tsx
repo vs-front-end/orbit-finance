@@ -1,8 +1,6 @@
 import { cn } from '@stellar-ui-kit/shared';
 import { Button } from '@stellar-ui-kit/web';
-
 import { RefreshCw } from 'lucide-react';
-
 import { formatTime } from '@/utils';
 
 type RefreshIndicatorProps = {

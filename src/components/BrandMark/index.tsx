@@ -1,5 +1,4 @@
 import { useId, type CSSProperties } from 'react';
-
 import { cn } from '@stellar-ui-kit/shared';
 
 type BrandMarkProps = {
@@ -63,6 +62,7 @@ export function BrandMark({ className, collapsed }: BrandMarkProps) {
           style={iconMaskStyle}
         />
       </div>
+
       <span
         className={cn(
           'overflow-hidden whitespace-nowrap text-xl font-bold tracking-tight text-foreground transition-[max-width,opacity] duration-200',

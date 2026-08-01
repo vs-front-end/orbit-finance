@@ -1,19 +1,19 @@
 import { z } from 'zod';
 
 export const currencySchema = z.enum(['BRL', 'USD']);
+
 export const assetClassSchema = z.enum([
   'stock-br',
   'fii',
   'stock-us',
   'crypto',
 ]);
-export const portfolioKindSchema = z.enum(['investment', 'watchlist']);
+
 export const transactionSideSchema = z.enum(['buy', 'sell']);
 
 export const portfolioSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
-  kind: portfolioKindSchema,
   currency: currencySchema,
   createdAt: z.iso.datetime(),
 });
@@ -26,13 +26,6 @@ export const transactionSchema = z.object({
   quantity: z.number().positive(),
   unitPrice: z.number().nonnegative(),
   executedAt: z.iso.datetime(),
-});
-
-export const watchItemSchema = z.object({
-  id: z.string(),
-  portfolioId: z.string(),
-  ticker: z.string().min(1),
-  addedAt: z.iso.datetime(),
 });
 
 export const assetSchema = z.object({
@@ -61,11 +54,9 @@ export const userSchema = z.object({
 
 export type Currency = z.infer<typeof currencySchema>;
 export type AssetClass = z.infer<typeof assetClassSchema>;
-export type PortfolioKind = z.infer<typeof portfolioKindSchema>;
 export type TransactionSide = z.infer<typeof transactionSideSchema>;
 export type Portfolio = z.infer<typeof portfolioSchema>;
 export type Transaction = z.infer<typeof transactionSchema>;
-export type WatchItem = z.infer<typeof watchItemSchema>;
 export type Asset = z.infer<typeof assetSchema>;
 export type Quote = z.infer<typeof quoteSchema>;
 export type AuthProvider = z.infer<typeof authProviderSchema>;

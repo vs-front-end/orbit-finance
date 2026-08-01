@@ -40,9 +40,6 @@ function today(): string {
 export const historyService: HistoryService = {
   async getHistory(days) {
     const portfolios = await portfoliosService.list();
-    const investments = portfolios.filter(
-      (portfolio) => portfolio.kind === 'investment',
-    );
     const since = new Date(Date.now() - days * DAY_MS)
       .toISOString()
       .slice(0, 10);
@@ -56,7 +53,7 @@ export const historyService: HistoryService = {
 
     const snapshots = z.array(snapshotSchema).parse(data);
 
-    return investments
+    return portfolios
       .map((portfolio) => ({
         portfolioId: portfolio.id,
         name: portfolio.name,

@@ -24,14 +24,6 @@ create table if not exists transactions (
   "executedAt"  text not null
 );
 
-create table if not exists watch_items (
-  id            text primary key,
-  user_id       uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  "portfolioId" text not null,
-  ticker        text not null,
-  "addedAt"     text not null
-);
-
 -- Catálogo de ativos que o usuário já usou (alimentado pela busca real ao
 -- registrar transações). Guarda os metadados — classe, setor, moeda — que
 -- roteiam a cotação e classificam a alocação de qualquer ticker.
@@ -58,14 +50,13 @@ create table if not exists portfolio_snapshots (
 );
 
 create index if not exists transactions_portfolio_idx on transactions ("portfolioId");
-create index if not exists watch_items_portfolio_idx on watch_items ("portfolioId");
 create index if not exists portfolio_snapshots_date_idx on portfolio_snapshots (date);
 -- RLS: cada usuário só enxerga e altera as próprias linhas.
 do $$
 declare
   t text;
 begin
-  foreach t in array array['portfolios', 'transactions', 'watch_items', 'portfolio_snapshots', 'assets']
+  foreach t in array array['portfolios', 'transactions', 'portfolio_snapshots', 'assets']
   loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists owner_all on %I', t);
