@@ -1,13 +1,10 @@
 import {
   attachPaymentDates,
-  buildPositions,
   computeRealizedEvents,
   computeReceivedDividends,
   makeFxLookup,
   mergeLedger,
-  projectPendingDividends,
   splitByPayment,
-  totalPending,
 } from '@/domain';
 import { findAsset } from '@/services';
 
@@ -47,13 +44,14 @@ export function useDashboardOverview() {
   const fxSeries = fxQuery.data ?? [];
   const usdToBrlAt = makeFxLookup(fxSeries);
   const today = new Date().toISOString().slice(0, 10);
+  const currentMonth = today.slice(0, 7);
 
   const investmentPortfolios = portfoliosQuery.data ?? [];
 
   let receivedBRL = 0;
   let announcedBRL = 0;
   let realizedBRL = 0;
-  let pendingBRL = 0;
+  let monthBRL = 0;
 
   for (const portfolio of investmentPortfolios) {
     const ownTransactions = transactions.filter(
@@ -76,22 +74,21 @@ export function useDashboardOverview() {
     );
     const { paid, pending: unpaid } = splitByPayment(merged, today);
 
-    // Câmbio da data do pagamento: é quando o dinheiro virou real de fato.
-    for (const dividend of paid) {
-      receivedBRL += dividend.received * rateAt(dividend.paymentDate);
+    if (!isUsd) {
+      for (const dividend of paid) {
+        receivedBRL += dividend.received;
+      }
+
+      for (const dividend of merged) {
+        if (dividend.paymentDate.slice(0, 7) === currentMonth) {
+          monthBRL += dividend.received;
+        }
+      }
     }
 
     for (const dividend of unpaid) {
       announcedBRL += dividend.received * rateAt(dividend.paymentDate);
     }
-
-    const pending = projectPendingDividends(
-      events,
-      buildPositions(ownTransactions),
-      classOf,
-      today,
-    );
-    pendingBRL += totalPending(pending) * (isUsd ? rate : 1);
   }
 
   return {
@@ -99,8 +96,8 @@ export function useDashboardOverview() {
     dividends: {
       totalBRL: receivedBRL,
       announcedBRL,
-      pendingBRL,
-      estimatedMonthlyBRL: pendingBRL,
+      pendingBRL: 0,
+      estimatedMonthlyBRL: monthBRL,
     },
     totalPLBRL: dashboard.consolidated.netPL + realizedBRL,
     isFetchingQuotes: dashboard.isFetchingQuotes || eventsQuery.isFetching,

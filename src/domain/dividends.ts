@@ -141,6 +141,10 @@ function isoDaysBefore(date: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+function paidAt(event: DividendEvent): string {
+  return event.paymentDate ?? event.exDate;
+}
+
 export function estimateMonthlyAmountPerShare(
   tickerEvents: DividendEvent[],
   today: string,
@@ -148,15 +152,15 @@ export function estimateMonthlyAmountPerShare(
   const ym = today.slice(0, 7);
   const month = today.slice(5, 7);
   const sorted = [...tickerEvents].sort((a, b) =>
-    b.exDate.localeCompare(a.exDate),
+    paidAt(b).localeCompare(paidAt(a)),
   );
 
-  if (sorted.some((event) => event.exDate.slice(0, 7) === ym)) return 0;
+  if (sorted.some((event) => paidAt(event).slice(0, 7) === ym)) return 0;
 
   const yearAgo = isoDaysBefore(today, 365);
-  const trailingYear = sorted.filter((event) => event.exDate >= yearAgo);
+  const trailingYear = sorted.filter((event) => paidAt(event) >= yearAgo);
   const distinctMonths = new Set(
-    trailingYear.map((event) => event.exDate.slice(0, 7)),
+    trailingYear.map((event) => paidAt(event).slice(0, 7)),
   );
 
   if (distinctMonths.size >= 6) {
@@ -168,7 +172,7 @@ export function estimateMonthlyAmountPerShare(
   const threeYearsAgo = isoDaysBefore(today, 365 * 3);
   const sameMonth = sorted.filter(
     (event) =>
-      event.exDate >= threeYearsAgo && event.exDate.slice(5, 7) === month,
+      paidAt(event) >= threeYearsAgo && paidAt(event).slice(5, 7) === month,
   );
 
   return sameMonth.length > 0
