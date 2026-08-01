@@ -28,7 +28,7 @@ export function AllocationBar({ slices }: AllocationBarProps) {
         ))}
       </div>
 
-      <ul className='flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1.5'>
+      <ul className='flex flex-wrap gap-x-4 gap-y-1.5'>
         {slices.map((slice, index) => (
           <li key={slice.label} className='flex items-center gap-2 text-sm'>
             <span
@@ -37,7 +37,7 @@ export function AllocationBar({ slices }: AllocationBarProps) {
                 chartColor(CHART_BG, index),
               )}
             />
-            <span className='min-w-0 break-words text-muted'>{slice.label}</span>
+            <span className='min-w-0 text-muted'>{slice.label}</span>
             <span className='shrink-0 tabular-nums text-xs font-medium'>
               {formatPercent(
                 total > 0 ? (slice.value / total) * 100 : 0,

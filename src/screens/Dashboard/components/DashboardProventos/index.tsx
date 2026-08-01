@@ -7,7 +7,7 @@ import {
 } from '@stellar-ui-kit/web';
 
 import type { MonthlyDividend } from '@/domain';
-import { formatMoney } from '@/utils';
+import { formatMoney, formatMoneyCompact } from '@/utils';
 
 import { BarChart } from '../BarChart';
 
@@ -30,10 +30,6 @@ function formatMonth(ym: string): string {
     .toUpperCase();
 }
 
-function formatBarValue(value: number): string {
-  return formatMoney(value, 'BRL');
-}
-
 export function DashboardProventos({
   series,
   monthlyAverage,
@@ -41,17 +37,21 @@ export function DashboardProventos({
   const hasData = series.some((entry) => entry.total > 0);
 
   return (
-    <Card className='gap-3 py-3 sm:py-4'>
+    <Card className='min-w-0 gap-3 py-3 sm:py-4'>
       <CardHeader className='px-4 sm:px-5'>
-        <div className='flex flex-wrap items-end justify-between gap-2'>
-          <div className='flex flex-col gap-0.5'>
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between'>
+          <div className='flex min-w-0 flex-col gap-0.5'>
             <CardTitle className='text-sm'>Proventos</CardTitle>
             <Text as='p' styleVariant='muted' className='text-xs'>
               Recebidos por mês
             </Text>
           </div>
           {hasData && (
-            <Text as='p' styleVariant='muted' className='text-xs'>
+            <Text
+              as='p'
+              styleVariant='muted'
+              className='shrink-0 text-xs'
+            >
               Média mensal:{' '}
               <span className='font-medium text-foreground'>
                 {formatMoney(monthlyAverage, 'BRL')}
@@ -60,7 +60,7 @@ export function DashboardProventos({
           )}
         </div>
       </CardHeader>
-      <CardContent className='mt-0 px-4 sm:px-5'>
+      <CardContent className='mt-0 min-w-0 px-4 sm:px-5'>
         {hasData ? (
           <BarChart
             items={series.map((entry) => ({
@@ -68,7 +68,7 @@ export function DashboardProventos({
               label: formatMonth(entry.month),
               value: entry.total,
             }))}
-            formatValue={formatBarValue}
+            formatValue={(value) => formatMoneyCompact(value, 'BRL')}
           />
         ) : (
           <div className='flex flex-col items-center gap-1.5 py-8 text-center'>

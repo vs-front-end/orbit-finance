@@ -18,7 +18,7 @@ type BarChartProps = {
   className?: string;
 };
 
-const SCROLL_STEP = 160;
+const SCROLL_STEP = 180;
 
 export function BarChart({ items, formatValue, className }: BarChartProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -64,19 +64,19 @@ export function BarChart({ items, formatValue, className }: BarChartProps) {
   };
 
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
+    <div className={cn('flex min-w-0 flex-col gap-2', className)}>
       <div
         ref={scrollerRef}
-        className='overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+        className='min-w-0 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
       >
-        <div className='flex w-max min-w-full items-end gap-2 px-0.5'>
+        <div className='flex w-max items-end gap-3'>
           {items.map((item) => {
             const height = (item.value / scale) * 100;
 
             return (
               <div
                 key={item.id}
-                className='flex w-14 shrink-0 flex-col items-center gap-1 sm:w-16'
+                className='flex w-[4.75rem] shrink-0 flex-col items-center gap-1'
               >
                 <span className='w-full text-center text-[10px] tabular-nums text-muted sm:text-xs'>
                   {formatValue(item.value)}

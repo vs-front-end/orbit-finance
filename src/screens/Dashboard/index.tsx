@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useDashboardHistory, useDashboardOverview } from '@/hooks';
 
+import { NewPortfolioDialog } from '../AppShell/NewPortfolioDialog';
 import { DashboardAllocation } from './components/DashboardAllocation';
 import { DashboardEmptyState } from './components/DashboardEmptyState';
 import { DashboardEvolution } from './components/DashboardEvolution';
@@ -14,6 +15,7 @@ import { PortfolioCard } from './PortfolioCard';
 
 export function Dashboard() {
   const [period, setPeriod] = useState('90');
+  const [newPortfolioOpen, setNewPortfolioOpen] = useState(false);
   const data = useDashboardOverview();
   const history = useDashboardHistory(Number(period));
 
@@ -21,11 +23,12 @@ export function Dashboard() {
   if (data.perPortfolio.length === 0) return <DashboardEmptyState />;
 
   return (
-    <div className='flex flex-col gap-3 sm:gap-4'>
+    <div className='flex min-w-0 flex-col gap-3 sm:gap-4'>
       <DashboardHeader
         updatedAt={data.quotesUpdatedAt}
         isFetching={data.isFetchingQuotes}
         onRefresh={() => void data.refetchQuotes()}
+        onNewPortfolio={() => setNewPortfolioOpen(true)}
       />
       <DashboardSummary
         consolidated={data.consolidated}
@@ -51,7 +54,7 @@ export function Dashboard() {
         portfolioSeries={history.portfolioSeries}
       />
 
-      <div className='grid gap-3 sm:gap-4 xl:grid-cols-2'>
+      <div className='grid min-w-0 gap-3 sm:gap-4 xl:grid-cols-2'>
         <DashboardProventos
           series={data.dividends.monthlySeries}
           monthlyAverage={data.dividends.monthlyAverageBRL}
@@ -64,6 +67,11 @@ export function Dashboard() {
       </div>
 
       <DashboardAllocation slices={data.allocations.byPortfolio} />
+
+      <NewPortfolioDialog
+        open={newPortfolioOpen}
+        onOpenChange={setNewPortfolioOpen}
+      />
     </div>
   );
 }

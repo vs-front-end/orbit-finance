@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 
+import { cn } from '@stellar-ui-kit/shared';
 import {
   Card,
   CardContent,
@@ -49,9 +50,11 @@ function RankingRow({
   value: ReactNode;
 }) {
   return (
-    <li className='flex items-center justify-between gap-3 border-b border-border py-2.5 last:border-b-0'>
+    <li className='flex min-w-0 items-center justify-between gap-3 border-b border-border py-2.5 last:border-b-0'>
       <div className='flex min-w-0 items-center gap-2.5'>
-        <span className='w-4 text-xs tabular-nums text-muted'>{rank}</span>
+        <span className='w-4 shrink-0 text-xs tabular-nums text-muted'>
+          {rank}
+        </span>
         <span className='truncate text-sm font-medium'>{ticker}</span>
       </div>
       <div className='shrink-0 text-sm'>{value}</div>
@@ -91,9 +94,9 @@ export function DashboardHighlights({
   const rows = lists[view];
 
   return (
-    <Card className='gap-3 py-3 sm:py-4'>
+    <Card className='min-w-0 gap-3 py-3 sm:py-4'>
       <CardHeader className='px-4 sm:px-5'>
-        <div className='flex flex-wrap items-center justify-between gap-2'>
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
           <CardTitle className='text-sm'>Destaques</CardTitle>
           <Select
             value={view}
@@ -101,7 +104,7 @@ export function DashboardHighlights({
               if (isHighlightsView(next)) setView(next);
             }}
           >
-            <SelectTrigger className={selectorClass}>
+            <SelectTrigger className={cn(selectorClass, 'w-full sm:w-auto')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -112,7 +115,7 @@ export function DashboardHighlights({
           </Select>
         </div>
       </CardHeader>
-      <CardContent className='mt-0 px-4 sm:px-5'>
+      <CardContent className='mt-0 min-w-0 px-4 sm:px-5'>
         {rows.length === 0 ? (
           <div className='flex flex-col items-center gap-1.5 py-8 text-center'>
             <Text as='p' className='text-sm font-medium'>
@@ -120,7 +123,7 @@ export function DashboardHighlights({
             </Text>
           </div>
         ) : (
-          <ul>
+          <ul className='min-w-0'>
             {rows.map((row, index) => (
               <RankingRow
                 key={row.ticker}
