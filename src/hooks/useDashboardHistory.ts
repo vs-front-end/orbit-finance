@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import type { Currency } from '@/domain';
 import { historyService } from '@/services';
@@ -35,7 +35,10 @@ export function useDashboardHistory(days: number) {
   const historyQuery = useQuery({
     queryKey: ['history', days],
     queryFn: () => historyService.getHistory(days),
-    staleTime: 12 * 60 * 60 * 1000,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
   const rateQuery = useUsdBrlRate();
   const rate = rateQuery.data ?? 0;

@@ -1,4 +1,6 @@
-import { useDashboardOverview } from '@/hooks';
+import { useState } from 'react';
+
+import { useDashboardHistory, useDashboardOverview } from '@/hooks';
 
 import { DashboardEmptyState } from './components/DashboardEmptyState';
 import { DashboardEvolution } from './components/DashboardEvolution';
@@ -8,9 +10,11 @@ import { DashboardSummary } from './components/DashboardSummary';
 import { PortfolioCard } from './PortfolioCard';
 
 export function Dashboard() {
+  const [period, setPeriod] = useState('90');
   const data = useDashboardOverview();
+  const history = useDashboardHistory(Number(period));
 
-  if (data.isLoading) return <DashboardSkeleton />;
+  if (data.isLoading || history.isLoading) return <DashboardSkeleton />;
   if (data.perPortfolio.length === 0) return <DashboardEmptyState />;
 
   return (
@@ -37,7 +41,13 @@ export function Dashboard() {
         ))}
       </div>
 
-      <DashboardEvolution />
+      <DashboardEvolution
+        period={period}
+        onPeriodChange={setPeriod}
+        hasHistory={history.hasHistory}
+        consolidatedSeries={history.consolidatedSeries}
+        portfolioSeries={history.portfolioSeries}
+      />
     </div>
   );
 }

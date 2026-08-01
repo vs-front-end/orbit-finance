@@ -149,7 +149,7 @@ export function useQuotes(tickers: string[]) {
   });
 }
 
-export function useDividendEvents(tickers: string[]) {
+export function useDividendEvents(tickers: string[], refreshOnMount = false) {
   const queryClient = useQueryClient();
   const sorted = [...tickers].sort();
 
@@ -159,6 +159,7 @@ export function useDividendEvents(tickers: string[]) {
     enabled: sorted.length > 0,
     initialData: () => getCachedDividendEvents(queryClient, sorted),
     ...sessionCacheOptions,
+    refetchOnMount: refreshOnMount ? 'always' : false,
     placeholderData: keepPreviousData,
   });
 }

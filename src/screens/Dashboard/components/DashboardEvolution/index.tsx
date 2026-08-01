@@ -5,18 +5,16 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Skeleton,
   Text,
 } from '@stellar-ui-kit/web';
 
-import { useDashboardHistory, type HistoryChartSeries } from '@/hooks';
+import type { HistoryChartSeries } from '@/hooks';
 
 import { EvolutionChartCard } from '../EvolutionChartCard';
 
 type EvolutionView = 'patrimony' | 'portfolios';
 
 type EvolutionContentProps = {
-  isLoading: boolean;
   hasHistory: boolean;
   view: EvolutionView;
   onViewChange: (view: EvolutionView) => void;
@@ -27,7 +25,6 @@ type EvolutionContentProps = {
 };
 
 function EvolutionContent({
-  isLoading,
   hasHistory,
   view,
   onViewChange,
@@ -36,10 +33,6 @@ function EvolutionContent({
   consolidatedSeries,
   portfolioSeries,
 }: EvolutionContentProps) {
-  if (isLoading) {
-    return <Skeleton className='h-60 w-full' />;
-  }
-
   if (!hasHistory) {
     return (
       <Card className='gap-3 py-3 sm:py-4'>
@@ -75,22 +68,33 @@ function EvolutionContent({
   );
 }
 
-export function DashboardEvolution() {
-  const [period, setPeriod] = useState('90');
+type DashboardEvolutionProps = {
+  period: string;
+  onPeriodChange: (period: string) => void;
+  hasHistory: boolean;
+  consolidatedSeries: HistoryChartSeries[];
+  portfolioSeries: HistoryChartSeries[];
+};
+
+export function DashboardEvolution({
+  period,
+  onPeriodChange,
+  hasHistory,
+  consolidatedSeries,
+  portfolioSeries,
+}: DashboardEvolutionProps) {
   const [view, setView] = useState<EvolutionView>('patrimony');
-  const history = useDashboardHistory(Number(period));
 
   return (
     <section>
       <EvolutionContent
-        isLoading={history.isLoading}
-        hasHistory={history.hasHistory}
+        hasHistory={hasHistory}
         view={view}
         onViewChange={setView}
         period={period}
-        onPeriodChange={setPeriod}
-        consolidatedSeries={history.consolidatedSeries}
-        portfolioSeries={history.portfolioSeries}
+        onPeriodChange={onPeriodChange}
+        consolidatedSeries={consolidatedSeries}
+        portfolioSeries={portfolioSeries}
       />
     </section>
   );

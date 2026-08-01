@@ -22,7 +22,7 @@ describe('buildRebalancePlan', () => {
       targetValue: 5000,
       diff: -2000,
     });
-    
+
     expect(b).toMatchObject({
       currentPercent: 30,
       targetValue: 5000,

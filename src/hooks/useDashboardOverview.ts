@@ -30,7 +30,7 @@ export function useDashboardOverview() {
   const tickers = [
     ...new Set(transactions.map((transaction) => transaction.ticker)),
   ];
-  const eventsQuery = useDividendEvents(tickers);
+  const eventsQuery = useDividendEvents(tickers, true);
   const events = eventsQuery.data ?? [];
   const rate = rateQuery.data ?? 0;
   const usdToBrlAt = makeFxLookup(fxQuery.data ?? []);
@@ -74,6 +74,10 @@ export function useDashboardOverview() {
       estimatedMonthlyBRL: pendingBRL,
     },
     totalPLBRL: dashboard.consolidated.netPL + realizedBRL,
+    isFetchingQuotes: dashboard.isFetchingQuotes || eventsQuery.isFetching,
+    refetchQuotes: async () => {
+      await Promise.all([dashboard.refetchQuotes(), eventsQuery.refetch()]);
+    },
     isLoading:
       dashboard.isLoading ||
       portfoliosQuery.isLoading ||

@@ -122,7 +122,7 @@ describe('summarizePositions', () => {
       { ticker: 'A', quantity: 10, avgPrice: 100, investedValue: 1000 },
       quote(120, 110),
     );
-    
+
     const loser = enrichPosition(
       { ticker: 'B', quantity: 10, avgPrice: 100, investedValue: 1000 },
       quote(80, 90),

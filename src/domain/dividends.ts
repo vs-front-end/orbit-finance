@@ -120,7 +120,6 @@ export function estimateMonthlyAmountPerShare(
 ): number {
   const ym = today.slice(0, 7);
   const month = today.slice(5, 7);
-
   const sorted = [...tickerEvents].sort((a, b) =>
     b.exDate.localeCompare(a.exDate),
   );
@@ -129,7 +128,6 @@ export function estimateMonthlyAmountPerShare(
 
   const yearAgo = isoDaysBefore(today, 365);
   const trailingYear = sorted.filter((event) => event.exDate >= yearAgo);
-
   const distinctMonths = new Set(
     trailingYear.map((event) => event.exDate.slice(0, 7)),
   );
@@ -141,17 +139,14 @@ export function estimateMonthlyAmountPerShare(
   }
 
   const threeYearsAgo = isoDaysBefore(today, 365 * 3);
-
   const sameMonth = sorted.filter(
     (event) =>
       event.exDate >= threeYearsAgo && event.exDate.slice(5, 7) === month,
   );
 
-  if (sameMonth.length > 0) {
-    return median(sameMonth.map((event) => event.amount));
-  }
-
-  return 0;
+  return sameMonth.length > 0
+    ? median(sameMonth.map((event) => event.amount))
+    : 0;
 }
 
 export type PendingDividend = {
