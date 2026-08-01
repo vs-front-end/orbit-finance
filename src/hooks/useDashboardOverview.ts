@@ -189,9 +189,7 @@ export function useDashboardOverview() {
     ...dashboard,
     dividends,
     movers,
-    topGainers: movers
-      .filter((mover) => mover.dailyPLPercent > 0)
-      .slice(0, 5),
+    topGainers: movers.filter((mover) => mover.dailyPLPercent > 0).slice(0, 5),
     topLosers: movers
       .filter((mover) => mover.dailyPLPercent < 0)
       .reverse()

@@ -47,11 +47,7 @@ export function DashboardProventos({
             </Text>
           </div>
           {hasData && (
-            <Text
-              as='p'
-              styleVariant='muted'
-              className='shrink-0 text-xs'
-            >
+            <Text as='p' styleVariant='muted' className='shrink-0 text-xs'>
               Média mensal:{' '}
               <span className='font-medium text-foreground'>
                 {formatMoney(monthlyAverage, 'BRL')}

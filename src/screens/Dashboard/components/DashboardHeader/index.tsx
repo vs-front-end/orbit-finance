@@ -32,11 +32,7 @@ export function DashboardHeader({
           isFetching={isFetching}
           onRefresh={onRefresh}
         />
-        <Button
-          size='sm'
-          aria-label='Nova carteira'
-          onClick={onNewPortfolio}
-        >
+        <Button size='sm' aria-label='Nova carteira' onClick={onNewPortfolio}>
           <Plus />
           <span className='hidden sm:inline'>Nova carteira</span>
         </Button>

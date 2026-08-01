@@ -391,9 +391,7 @@ describe('monthlyReceivedSeries', () => {
       '2026-06',
       '2026-07',
     ]);
-    expect(series.map((entry) => entry.total)).toEqual([
-      3.44, 0, 0, 0, 49.4,
-    ]);
+    expect(series.map((entry) => entry.total)).toEqual([3.44, 0, 0, 0, 49.4]);
   });
 });
 

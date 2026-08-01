@@ -1,9 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@stellar-ui-kit/web';
 
-import {
-  AllocationBar,
-  type AllocationSlice,
-} from '@/components/Charts';
+import { AllocationBar, type AllocationSlice } from '@/components/Charts';
 import { formatMoney } from '@/utils';
 
 type DashboardAllocationProps = {
