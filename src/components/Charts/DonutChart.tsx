@@ -4,8 +4,9 @@ import { cn } from '@stellar-ui-kit/shared';
 
 import { formatPercent } from '@/utils';
 
-import type { AllocationSlice } from './AllocationBar';
 import { CHART_BG, CHART_STROKE, chartColor } from './chartColors';
+
+type AllocationSlice = { label: string; value: number };
 
 const RADIUS = 40;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;

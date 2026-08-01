@@ -1,7 +1,7 @@
 # Orbit Finance
 
-Personal finance hub. **Investments** module: portfolios, positions, P/L, allocation,
-automatic dividends, fixed income (manual value), evolution stats, and other assets outside portfolios.
+Personal finance hub. **Investments** module: portfolios, positions, P/L,
+automatic dividends and evolution charts.
 **Tool**: portfolio rebalancing.
 
 UI built with [Stellar UI Kit](https://stellar.vsdev.app).
@@ -24,10 +24,8 @@ GitHub auth via Supabase. Data in Supabase. Quotes via Yahoo (Edge Function).
 | B3, US, crypto quotes | Yahoo via `supabase/functions/quotes-us` |
 | Asset search | Yahoo (same function) + CoinGecko (crypto) |
 | USD/BRL | AwesomeAPI |
-| CDI | BCB/SGS (patrimony valuation) |
 | Fixed income in portfolio | Manual `currentValue` |
 | Dividends / proventos | Yahoo via `quotes-us` (`dividends`), per-share × held quantity on the ex-date |
-| Benchmarks (Ibovespa, S&P 500) | Yahoo via `quotes-us` (`indexDays`) |
 
 Copy `.env.example` to `.env.local` and fill in Supabase vars.
 
@@ -36,7 +34,7 @@ Copy `.env.example` to `.env.local` and fill in Supabase vars.
 ```
 src/
   domain/      types, zod, position/P&L math (pure)
-  services/    auth, portfolios, assets, quotes, history, targets, cdi, patrimony
+  services/    auth, portfolios, assets, quotes, history, targets
   hooks/       TanStack Query
   screens/     pages + local components
   routes/      TanStack Router (file-based)

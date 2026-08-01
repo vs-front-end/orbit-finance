@@ -12,7 +12,6 @@ export {
   type NewTransaction,
   type UpdateTransaction,
 } from './portfolios';
-export { cdiService, type CdiService } from './cdi';
 export {
   targetsService,
   type TargetsService,
@@ -26,9 +25,3 @@ export {
   type HistoryPoint,
   type PortfolioHistory,
 } from './history';
-export {
-  patrimonyService,
-  type PatrimonyService,
-  type NewPatrimonyItem,
-  type UpdatePatrimonyItem,
-} from './patrimony';

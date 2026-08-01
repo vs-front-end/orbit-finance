@@ -1,7 +1,6 @@
 import type { FxPoint, Quote } from '@/domain';
 
 import { findAsset } from '../assets/catalog';
-import { getBenchmarkReturns as fetchBenchmarkReturns } from './providers/benchmark';
 import { getAwesomeUsdBrl } from './providers/awesomeapi';
 import { getUsdBrlSeries as fetchUsdBrlSeries } from './providers/fx';
 import { getYahooQuotes } from './providers/yahoo';
@@ -10,10 +9,6 @@ export type QuotesService = {
   getQuotes: (tickers: string[]) => Promise<Quote[]>;
   getUsdBrlRate: () => Promise<number>;
   getUsdBrlSeries: () => Promise<FxPoint[]>;
-  getBenchmarkReturns: (days: number) => Promise<{
-    ibov: number | null;
-    sp500: number | null;
-  }>;
 };
 
 function isPlausibleQuote(quote: Quote): boolean {
@@ -57,9 +52,5 @@ export const quotesService: QuotesService = {
 
   async getUsdBrlSeries() {
     return fetchUsdBrlSeries();
-  },
-
-  async getBenchmarkReturns(days) {
-    return fetchBenchmarkReturns(days);
   },
 };

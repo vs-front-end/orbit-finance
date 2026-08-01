@@ -8,9 +8,9 @@ import {
 
 import { usePortfolio } from '@/hooks';
 
-import { InvestmentView } from './InvestmentView';
-import { PortfolioSkeleton } from './PortfolioSkeleton';
-import { WatchlistView } from './WatchlistView';
+import { InvestmentView } from './components/InvestmentView';
+import { PortfolioSkeleton } from './components/PortfolioSkeleton';
+import { WatchlistView } from './components/WatchlistView';
 
 export function PortfolioScreen({ portfolioId }: { portfolioId: string }) {
   const { data: portfolio, isLoading } = usePortfolio(portfolioId);

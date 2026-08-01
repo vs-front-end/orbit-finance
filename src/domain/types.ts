@@ -50,24 +50,6 @@ export const quoteSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 
-export const patrimonyKindSchema = z.enum([
-  'cash',
-  'reserve',
-  'property',
-  'vehicle',
-]);
-
-export const patrimonyItemSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1),
-  kind: patrimonyKindSchema,
-  value: z.number().nonnegative(),
-  referenceDate: z.string().nullable(),
-  cdiPercent: z.number().nullable(),
-  annualRate: z.number().nullable(),
-  createdAt: z.iso.datetime(),
-});
-
 export const authProviderSchema = z.enum(['github']);
 
 export const userSchema = z.object({
@@ -86,7 +68,5 @@ export type Transaction = z.infer<typeof transactionSchema>;
 export type WatchItem = z.infer<typeof watchItemSchema>;
 export type Asset = z.infer<typeof assetSchema>;
 export type Quote = z.infer<typeof quoteSchema>;
-export type PatrimonyKind = z.infer<typeof patrimonyKindSchema>;
-export type PatrimonyItem = z.infer<typeof patrimonyItemSchema>;
 export type AuthProvider = z.infer<typeof authProviderSchema>;
 export type User = z.infer<typeof userSchema>;

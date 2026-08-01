@@ -16,14 +16,9 @@ import { PLValue } from '@/components';
 type PortfolioCardProps = {
   portfolio: Portfolio;
   summary: PLSummary;
-  positionCount: number;
 };
 
-export function PortfolioCard({
-  portfolio,
-  summary,
-  positionCount,
-}: PortfolioCardProps) {
+export function PortfolioCard({ portfolio, summary }: PortfolioCardProps) {
   return (
     <Link
       to='/carteiras/$portfolioId'
@@ -59,9 +54,6 @@ export function PortfolioCard({
               className='text-sm'
             />
           </div>
-          <span className='mt-1 text-xs text-muted'>
-            {positionCount} {positionCount === 1 ? 'posição' : 'posições'}
-          </span>
         </CardContent>
       </Card>
     </Link>

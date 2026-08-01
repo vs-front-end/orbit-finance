@@ -2,9 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import {
   assetsService,
-  cdiService,
   dividendsService,
-  patrimonyService,
   portfoliosService,
   quotesService,
   targetsService,
@@ -23,7 +21,6 @@ export const queryKeys = {
   dividends: (tickers: string[]) => ['dividends', ...tickers] as const,
   usdBrl: ['usd-brl'] as const,
   targets: ['targets'] as const,
-  patrimonyItems: ['patrimony-items'] as const,
 };
 
 export function useAssets() {
@@ -111,25 +108,9 @@ export function useUsdBrlSeries() {
   });
 }
 
-export function useCdiSeries(since: string | null) {
-  return useQuery({
-    queryKey: ['cdi-series', since],
-    queryFn: () => cdiService.getCdiSeries(since ?? ''),
-    enabled: since !== null,
-    staleTime: 12 * 60 * 60 * 1000,
-  });
-}
-
 export function useTargets() {
   return useQuery({
     queryKey: queryKeys.targets,
     queryFn: () => targetsService.getTargets(),
-  });
-}
-
-export function usePatrimonyItems() {
-  return useQuery({
-    queryKey: queryKeys.patrimonyItems,
-    queryFn: () => patrimonyService.list(),
   });
 }

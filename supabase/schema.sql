@@ -47,8 +47,7 @@ create table if not exists assets (
 );
 
 -- Snapshot diário do valor de mercado por carteira (moeda nativa). Um por dia
--- por carteira (id = portfolioId-data), acumulado conforme o app é usado — é a
--- fonte real do gráfico de evolução.
+-- por carteira (id = portfolioId-data), usado pelos gráficos da Dashboard.
 create table if not exists portfolio_snapshots (
   id            text primary key,
   user_id       uuid not null default auth.uid() references auth.users (id) on delete cascade,
@@ -58,28 +57,15 @@ create table if not exists portfolio_snapshots (
   currency      text not null
 );
 
-create table if not exists patrimony_items (
-  id        text primary key,
-  user_id   uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  name      text not null,
-  kind      text not null default 'cash',
-  value     double precision not null,
-  "referenceDate" text,
-  "cdiPercent" double precision,
-  "annualRate" double precision,
-  "createdAt" text not null
-);
-
 create index if not exists transactions_portfolio_idx on transactions ("portfolioId");
 create index if not exists watch_items_portfolio_idx on watch_items ("portfolioId");
 create index if not exists portfolio_snapshots_date_idx on portfolio_snapshots (date);
-
 -- RLS: cada usuário só enxerga e altera as próprias linhas.
 do $$
 declare
   t text;
 begin
-  foreach t in array array['portfolios', 'transactions', 'watch_items', 'portfolio_snapshots', 'assets', 'patrimony_items']
+  foreach t in array array['portfolios', 'transactions', 'watch_items', 'portfolio_snapshots', 'assets']
   loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists owner_all on %I', t);

@@ -163,33 +163,6 @@ async function searchYahoo(
     }));
 }
 
-async function fetchIndexReturn(
-  symbol: string,
-  days: number,
-): Promise<number | null> {
-  const range =
-    days <= 30 ? '1mo' : days <= 90 ? '3mo' : days <= 180 ? '6mo' : '1y';
-  const response = await fetch(
-    `${YAHOO}/${encodeURIComponent(symbol)}?interval=1d&range=${range}`,
-    { headers: { 'User-Agent': 'Mozilla/5.0' } },
-  );
-  if (!response.ok) return null;
-
-  const data = await response.json();
-  const closes: unknown[] =
-    data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
-  const valid = closes.filter(
-    (value): value is number => typeof value === 'number',
-  );
-  if (valid.length < 2) return null;
-
-  const first = valid[0];
-  const last = valid[valid.length - 1];
-  if (first <= 0) return null;
-
-  return (last / first - 1) * 100;
-}
-
 async function fetchDividends(
   ticker: string,
   symbol: string,
@@ -281,21 +254,6 @@ Deno.serve(async (req) => {
     if (body.fx === 'USD-BRL') {
       const range = typeof body.range === 'string' ? body.range : '5y';
       return Response.json(await fetchFxSeries(range), { headers: cors });
-    }
-
-    if (body.indexDays !== undefined && body.indexDays !== null) {
-      const days = Math.max(1, Math.round(Number(body.indexDays)));
-      if (!Number.isFinite(days)) {
-        return Response.json(
-          { error: 'indexDays inválido' },
-          { status: 400, headers: cors },
-        );
-      }
-      const [ibov, sp500] = await Promise.all([
-        fetchIndexReturn('^BVSP', days),
-        fetchIndexReturn('^GSPC', days),
-      ]);
-      return Response.json({ ibov, sp500 }, { headers: cors });
     }
 
     const { symbols } = body;

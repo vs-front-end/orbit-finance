@@ -43,7 +43,6 @@ export const historyService: HistoryService = {
     const investments = portfolios.filter(
       (portfolio) => portfolio.kind === 'investment',
     );
-
     const since = new Date(Date.now() - days * DAY_MS)
       .toISOString()
       .slice(0, 10);
@@ -52,6 +51,7 @@ export const historyService: HistoryService = {
       .select('"portfolioId", date, value')
       .gte('date', since)
       .order('date');
+
     if (error) throw new Error(error.message);
 
     const snapshots = z.array(snapshotSchema).parse(data);
@@ -80,10 +80,10 @@ export const historyService: HistoryService = {
       value: entry.value,
       currency: entry.currency,
     }));
-
     const { error } = await supabase
       .from('portfolio_snapshots')
       .upsert(rows, { onConflict: 'id' });
+
     if (error) throw new Error(error.message);
   },
 };

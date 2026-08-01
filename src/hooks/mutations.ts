@@ -2,14 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 
 import {
-  patrimonyService,
   portfoliosService,
   targetsService,
   type AllocationTargets,
-  type NewPatrimonyItem,
   type NewPortfolio,
   type NewTransaction,
-  type UpdatePatrimonyItem,
   type UpdateTransaction,
 } from '@/services';
 
@@ -145,33 +142,5 @@ export function useRemoveWatchItem(portfolioId: string) {
   return useMutation({
     mutationFn: (id: string) => portfoliosService.removeWatchItem(id),
     onSuccess: () => invalidate([queryKeys.watchItems(portfolioId)]),
-  });
-}
-
-export function useAddPatrimonyItem() {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: (input: NewPatrimonyItem) => patrimonyService.add(input),
-    onSuccess: () => invalidate([queryKeys.patrimonyItems]),
-  });
-}
-
-export function useUpdatePatrimonyItem() {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdatePatrimonyItem }) =>
-      patrimonyService.update(id, input),
-    onSuccess: () => invalidate([queryKeys.patrimonyItems]),
-  });
-}
-
-export function useRemovePatrimonyItem() {
-  const invalidate = useInvalidate();
-
-  return useMutation({
-    mutationFn: (id: string) => patrimonyService.remove(id),
-    onSuccess: () => invalidate([queryKeys.patrimonyItems]),
   });
 }

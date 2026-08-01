@@ -15,10 +15,8 @@ import {
 } from '@stellar-ui-kit/web';
 
 import {
-  ChartLine,
   ChevronLeft,
   ChevronRight,
-  FileText,
   LayoutDashboard,
   LogOut,
   Plus,
@@ -230,26 +228,6 @@ export function SidebarContent({
           >
             <LayoutDashboard className='size-4 shrink-0' />
             {!collapsed && 'Dashboard'}
-          </SidebarNavItem>
-
-          <SidebarNavItem
-            collapsed={collapsed}
-            tooltip='Relatórios'
-            to='/relatorios'
-            onClick={onNavigate}
-          >
-            <FileText className='size-4 shrink-0' />
-            {!collapsed && 'Relatórios'}
-          </SidebarNavItem>
-
-          <SidebarNavItem
-            collapsed={collapsed}
-            tooltip='Estatísticas'
-            to='/estatisticas'
-            onClick={onNavigate}
-          >
-            <ChartLine className='size-4 shrink-0' />
-            {!collapsed && 'Estatísticas'}
           </SidebarNavItem>
 
           <SidebarNavItem

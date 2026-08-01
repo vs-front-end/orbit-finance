@@ -12,9 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
-import { Route as AppRelatoriosRouteImport } from './routes/_app.relatorios'
 import { Route as AppRebalanceamentoRouteImport } from './routes/_app.rebalanceamento'
-import { Route as AppEstatisticasRouteImport } from './routes/_app.estatisticas'
 import { Route as AppCarteirasPortfolioIdRouteImport } from './routes/_app.carteiras.$portfolioId'
 
 const LoginRoute = LoginRouteImport.update({
@@ -31,19 +29,9 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
-  id: '/relatorios',
-  path: '/relatorios',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppRebalanceamentoRoute = AppRebalanceamentoRouteImport.update({
   id: '/rebalanceamento',
   path: '/rebalanceamento',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEstatisticasRoute = AppEstatisticasRouteImport.update({
-  id: '/estatisticas',
-  path: '/estatisticas',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCarteirasPortfolioIdRoute = AppCarteirasPortfolioIdRouteImport.update({
@@ -55,16 +43,12 @@ const AppCarteirasPortfolioIdRoute = AppCarteirasPortfolioIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
-  '/estatisticas': typeof AppEstatisticasRoute
   '/rebalanceamento': typeof AppRebalanceamentoRoute
-  '/relatorios': typeof AppRelatoriosRoute
   '/carteiras/$portfolioId': typeof AppCarteirasPortfolioIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/estatisticas': typeof AppEstatisticasRoute
   '/rebalanceamento': typeof AppRebalanceamentoRoute
-  '/relatorios': typeof AppRelatoriosRoute
   '/': typeof AppIndexRoute
   '/carteiras/$portfolioId': typeof AppCarteirasPortfolioIdRoute
 }
@@ -72,36 +56,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
-  '/_app/estatisticas': typeof AppEstatisticasRoute
   '/_app/rebalanceamento': typeof AppRebalanceamentoRoute
-  '/_app/relatorios': typeof AppRelatoriosRoute
   '/_app/': typeof AppIndexRoute
   '/_app/carteiras/$portfolioId': typeof AppCarteirasPortfolioIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/login'
-    | '/estatisticas'
-    | '/rebalanceamento'
-    | '/relatorios'
-    | '/carteiras/$portfolioId'
+  fullPaths: '/' | '/login' | '/rebalanceamento' | '/carteiras/$portfolioId'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/login'
-    | '/estatisticas'
-    | '/rebalanceamento'
-    | '/relatorios'
-    | '/'
-    | '/carteiras/$portfolioId'
+  to: '/login' | '/rebalanceamento' | '/' | '/carteiras/$portfolioId'
   id:
     | '__root__'
     | '/_app'
     | '/login'
-    | '/_app/estatisticas'
     | '/_app/rebalanceamento'
-    | '/_app/relatorios'
     | '/_app/'
     | '/_app/carteiras/$portfolioId'
   fileRoutesById: FileRoutesById
@@ -134,25 +102,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/relatorios': {
-      id: '/_app/relatorios'
-      path: '/relatorios'
-      fullPath: '/relatorios'
-      preLoaderRoute: typeof AppRelatoriosRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/rebalanceamento': {
       id: '/_app/rebalanceamento'
       path: '/rebalanceamento'
       fullPath: '/rebalanceamento'
       preLoaderRoute: typeof AppRebalanceamentoRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/estatisticas': {
-      id: '/_app/estatisticas'
-      path: '/estatisticas'
-      fullPath: '/estatisticas'
-      preLoaderRoute: typeof AppEstatisticasRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/carteiras/$portfolioId': {
@@ -166,17 +120,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppEstatisticasRoute: typeof AppEstatisticasRoute
   AppRebalanceamentoRoute: typeof AppRebalanceamentoRoute
-  AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppIndexRoute: typeof AppIndexRoute
   AppCarteirasPortfolioIdRoute: typeof AppCarteirasPortfolioIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppEstatisticasRoute: AppEstatisticasRoute,
   AppRebalanceamentoRoute: AppRebalanceamentoRoute,
-  AppRelatoriosRoute: AppRelatoriosRoute,
   AppIndexRoute: AppIndexRoute,
   AppCarteirasPortfolioIdRoute: AppCarteirasPortfolioIdRoute,
 }

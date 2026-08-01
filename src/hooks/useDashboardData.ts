@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 
-import type { AllocationSlice } from '@/components/Charts';
-import { summarizePositions, type Currency, type PositionView } from '@/domain';
-import { findAsset, historyService } from '@/services';
+import { summarizePositions, type Currency } from '@/domain';
+import { historyService } from '@/services';
 
 import {
   useAllTransactions,
@@ -11,13 +10,6 @@ import {
   useUsdBrlRate,
 } from './queries';
 import { buildPositionViews } from './usePositionViews';
-
-const CLASS_LABELS: Record<string, string> = {
-  fii: 'FIIs',
-  'stock-br': 'Ações BR',
-  'stock-us': 'Ações US',
-  crypto: 'Cripto',
-};
 
 export function useDashboardData() {
   const portfoliosQuery = usePortfolios();
@@ -63,7 +55,6 @@ export function useDashboardData() {
     const allQuotesReady = positioned.every(({ views }) =>
       views.every((view) => view.quote !== null),
     );
-
     const entries = positioned
       .filter(
         ({ summary, views }) =>
@@ -74,6 +65,7 @@ export function useDashboardData() {
         value: summary.marketValue,
         currency: portfolio.currency,
       }));
+
     if (entries.length === 0) return;
 
     if (allQuotesReady) localStorage.setItem(flag, '1');
@@ -81,14 +73,6 @@ export function useDashboardData() {
       .recordSnapshot(entries)
       .catch(() => localStorage.removeItem(flag));
   }, [dataReady, quotesQuery.dataUpdatedAt]);
-
-  const allViewsBRL: { view: PositionView; valueBRL: number }[] =
-    perPortfolio.flatMap(({ portfolio, views }) =>
-      views.map((view) => ({
-        view,
-        valueBRL: toBRL(view.marketValue, portfolio.currency),
-      })),
-    );
 
   const totals = perPortfolio.reduce(
     (acc, { portfolio, summary }) => ({
@@ -123,28 +107,10 @@ export function useDashboardData() {
         : 0,
   };
 
-  const byPortfolio: AllocationSlice[] = perPortfolio
-    .map(({ portfolio, summary }) => ({
-      label: portfolio.name,
-      value: toBRL(summary.marketValue, portfolio.currency),
-    }))
-    .filter((slice) => slice.value > 0);
-
-  const byClass = groupSlices(allViewsBRL, ({ view }) => {
-    const assetClass = findAsset(view.ticker)?.assetClass;
-    return assetClass ? CLASS_LABELS[assetClass] : 'Outros';
-  });
-
-  const bySector = groupSlices(
-    allViewsBRL,
-    ({ view }) => findAsset(view.ticker)?.sector ?? 'Outros',
-  );
-
   return {
     perPortfolio,
     consolidated,
     usdBrlRate: rate,
-    allocations: { byPortfolio, byClass, bySector: topSlices(bySector, 6) },
     isLoading:
       portfoliosQuery.isLoading ||
       transactionsQuery.isLoading ||
@@ -154,32 +120,4 @@ export function useDashboardData() {
     quotesUpdatedAt: quotesQuery.dataUpdatedAt,
     refetchQuotes: quotesQuery.refetch,
   };
-}
-
-function groupSlices(
-  items: { view: PositionView; valueBRL: number }[],
-  getLabel: (item: { view: PositionView; valueBRL: number }) => string,
-): AllocationSlice[] {
-  const groups = new Map<string, number>();
-
-  for (const item of items) {
-    const label = getLabel(item);
-    groups.set(label, (groups.get(label) ?? 0) + item.valueBRL);
-  }
-
-  return [...groups.entries()]
-    .map(([label, value]) => ({ label, value }))
-    .filter((slice) => slice.value > 0)
-    .sort((a, b) => b.value - a.value);
-}
-
-function topSlices(slices: AllocationSlice[], max: number): AllocationSlice[] {
-  if (slices.length <= max) return slices;
-  const top = slices.slice(0, max - 1);
-
-  const rest = slices
-    .slice(max - 1)
-    .reduce((total, slice) => total + slice.value, 0);
-
-  return [...top, { label: 'Outros', value: rest }];
 }
