@@ -1,6 +1,14 @@
+import { useState } from 'react';
+
 import {
   Badge,
   Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Empty,
   EmptyDescription,
   EmptyHeader,
@@ -40,6 +48,7 @@ export function TransactionsTable({
   transactions,
   onEdit,
 }: TransactionsTableProps) {
+  const [pending, setPending] = useState<Transaction | null>(null);
   const removeTransaction = useRemoveTransaction();
   const { sorted, sortKey, sortDir, onSort } = useTableSort(
     transactions,
@@ -61,97 +70,134 @@ export function TransactionsTable({
   }
 
   return (
-    <Table>
-      <thead>
-        <tr>
-          <SortableTh
-            label='Data/hora'
-            columnKey='executedAt'
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onSort={onSort}
-          />
-          <SortableTh
-            label='Ativo'
-            columnKey='ticker'
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onSort={onSort}
-          />
-          <SortableTh
-            label='Tipo'
-            columnKey='side'
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onSort={onSort}
-          />
-          <SortableTh
-            label='Qtd.'
-            columnKey='quantity'
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onSort={onSort}
-            align='right'
-          />
-          <SortableTh
-            label='Preço'
-            columnKey='unitPrice'
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onSort={onSort}
-            align='right'
-          />
-          <SortableTh
-            label='Total'
-            columnKey='total'
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onSort={onSort}
-            align='right'
-          />
-          <THeadCell />
-        </tr>
-      </thead>
-      <tbody>
-        {sorted.map((tx) => (
-          <TRow key={tx.id}>
-            <TCell className='text-muted'>
-              {formatDateTime(tx.executedAt)}
-            </TCell>
-            <TCell className='font-medium'>{tx.ticker}</TCell>
-            <TCell>
-              <Badge variant={tx.side === 'buy' ? 'success' : 'destructive'}>
-                {tx.side === 'buy' ? 'Compra' : 'Venda'}
-              </Badge>
-            </TCell>
-            <TCell className='text-right'>{formatQuantity(tx.quantity)}</TCell>
-            <TCell className='text-right'>{formatPrice(tx.unitPrice)}</TCell>
-            <TCell className='text-right font-medium'>
-              {formatMoney(tx.quantity * tx.unitPrice, currency)}
-            </TCell>
-            <TCell className='w-20 text-right'>
-              <div className='flex justify-end gap-1'>
-                <Button
-                  variant='ghost'
-                  size='icon-sm'
-                  aria-label='Editar transação'
-                  onClick={() => onEdit(tx)}
-                >
-                  <Pencil />
-                </Button>
-                <Button
-                  variant='ghost'
-                  size='icon-sm'
-                  aria-label='Excluir transação'
-                  onClick={() => removeTransaction.mutate(tx.id)}
-                >
-                  <Trash2 className='text-error-text' />
-                </Button>
-              </div>
-            </TCell>
-          </TRow>
-        ))}
-      </tbody>
-    </Table>
+    <>
+      <Table>
+        <thead>
+          <tr>
+            <SortableTh
+              label='Data/hora'
+              columnKey='executedAt'
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={onSort}
+            />
+            <SortableTh
+              label='Ativo'
+              columnKey='ticker'
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={onSort}
+            />
+            <SortableTh
+              label='Tipo'
+              columnKey='side'
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={onSort}
+            />
+            <SortableTh
+              label='Qtd.'
+              columnKey='quantity'
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={onSort}
+              align='right'
+            />
+            <SortableTh
+              label='Preço'
+              columnKey='unitPrice'
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={onSort}
+              align='right'
+            />
+            <SortableTh
+              label='Total'
+              columnKey='total'
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={onSort}
+              align='right'
+            />
+            <THeadCell />
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((tx) => (
+            <TRow key={tx.id}>
+              <TCell className='text-muted'>
+                {formatDateTime(tx.executedAt)}
+              </TCell>
+              <TCell className='font-medium'>{tx.ticker}</TCell>
+              <TCell>
+                <Badge variant={tx.side === 'buy' ? 'success' : 'destructive'}>
+                  {tx.side === 'buy' ? 'Compra' : 'Venda'}
+                </Badge>
+              </TCell>
+              <TCell className='text-right'>
+                {formatQuantity(tx.quantity)}
+              </TCell>
+              <TCell className='text-right'>{formatPrice(tx.unitPrice)}</TCell>
+              <TCell className='text-right font-medium'>
+                {formatMoney(tx.quantity * tx.unitPrice, currency)}
+              </TCell>
+              <TCell className='w-20 text-right'>
+                <div className='flex justify-end gap-1'>
+                  <Button
+                    variant='ghost'
+                    size='icon-sm'
+                    aria-label='Editar transação'
+                    onClick={() => onEdit(tx)}
+                  >
+                    <Pencil />
+                  </Button>
+                  <Button
+                    variant='ghost'
+                    size='icon-sm'
+                    aria-label='Excluir transação'
+                    onClick={() => setPending(tx)}
+                  >
+                    <Trash2 className='text-error-text' />
+                  </Button>
+                </div>
+              </TCell>
+            </TRow>
+          ))}
+        </tbody>
+      </Table>
+
+      <Dialog
+        open={pending !== null}
+        onOpenChange={(open) => !open && setPending(null)}
+      >
+        <DialogContent className='sm:max-w-sm'>
+          <DialogHeader>
+            <DialogTitle>Excluir transação</DialogTitle>
+            <DialogDescription>
+              {pending
+                ? `Excluir ${pending.side === 'buy' ? 'compra' : 'venda'} de ${formatQuantity(pending.quantity)} ${pending.ticker}? Essa ação não tem volta.`
+                : null}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant='ghost' onClick={() => setPending(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant='destructive'
+              disabled={removeTransaction.isPending || pending === null}
+              onClick={() => {
+                if (pending === null) return;
+                removeTransaction.mutate(pending.id, {
+                  onSuccess: () => setPending(null),
+                });
+              }}
+            >
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
