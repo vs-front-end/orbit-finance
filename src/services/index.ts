@@ -19,6 +19,7 @@ export {
 } from './targets';
 export { quotesService, type QuotesService } from './quotes';
 export { dividendsService, type DividendsService } from './dividends';
+export { ledgerService, type LedgerService, type DividendEdit } from './ledger';
 export {
   historyService,
   type HistoryService,

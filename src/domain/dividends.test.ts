@@ -267,8 +267,14 @@ describe('totalsInBRL', () => {
 });
 
 describe('withholdingRate com rótulo', () => {
-  it('retains 15% on JCP even for stock-br', () => {
+  it('retains 17.5% on JCP paid from 2026 on', () => {
     expect(withholdingRate('stock-br', '2026-06-02', 'JRS CAP PROPRIO')).toBe(
+      0.175,
+    );
+  });
+
+  it('keeps 15% on JCP paid before the 2026 change', () => {
+    expect(withholdingRate('stock-br', '2025-12-31', 'JRS CAP PROPRIO')).toBe(
       0.15,
     );
   });
@@ -315,9 +321,49 @@ describe('computeReceivedDividends com pagamento', () => {
     );
 
     expect(received.gross).toBeCloseTo(35, 10);
-    expect(received.tax).toBeCloseTo(5.25, 10);
-    expect(received.received).toBeCloseTo(29.75, 10);
+    expect(received.tax).toBeCloseTo(6.125, 10);
+    expect(received.received).toBeCloseTo(28.875, 10);
     expect(received.paymentDate).toBe('2026-08-20');
     expect(received.estimatedPayment).toBe(false);
+  });
+});
+
+describe('conferência contra a B3', () => {
+  const jcp2026 = (quantity: number, amount: number, paymentDate: string) =>
+    computeReceivedDividends(
+      [
+        {
+          id: '1',
+          portfolioId: 'p1',
+          ticker: 'X',
+          side: 'buy',
+          quantity,
+          unitPrice: 1,
+          executedAt: '2025-01-01T12:00:00.000Z',
+        },
+      ],
+      [
+        {
+          ticker: 'X',
+          exDate: '2026-06-30',
+          amount,
+          paymentDate,
+          estimatedPayment: false,
+          paymentLabel: 'JRS CAP PROPRIO',
+        },
+      ],
+      () => 'stock-br',
+    )[0];
+
+  it('matches the ABCB4 net value from the B3 statement', () => {
+    expect(jcp2026(42, 1.167999, '2026-08-12').received).toBeCloseTo(40.47, 2);
+  });
+
+  it('matches the ITSA4 net value from the B3 statement', () => {
+    expect(jcp2026(70, 0.138, '2026-08-31').received).toBeCloseTo(7.97, 2);
+  });
+
+  it('matches the PSSA3 net value from the B3 statement', () => {
+    expect(jcp2026(19, 0.512803, '2027-04-30').received).toBeCloseTo(8.04, 2);
   });
 });

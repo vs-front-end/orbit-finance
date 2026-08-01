@@ -14,6 +14,7 @@ export type ReceivedDividend = {
   exDate: string;
   paymentDate: string;
   estimatedPayment: boolean;
+  label: string;
   amountPerShare: number;
   quantity: number;
   gross: number;
@@ -30,27 +31,34 @@ const WITHHOLDING: Record<AssetClass, WithholdingBracket[]> = {
   crypto: [{ from: '1970-01-01', rate: 0 }],
 };
 
-const JCP_RATE = 0.15;
+const JCP: WithholdingBracket[] = [
+  { from: '1970-01-01', rate: 0.15 },
+  { from: '2026-01-01', rate: 0.175 },
+];
 
 function isJcp(label: string | undefined): boolean {
   return (label ?? '').toUpperCase().includes('JRS CAP PROPRIO');
 }
 
-export function withholdingRate(
-  assetClass: AssetClass | null,
-  exDate: string,
-  label?: string,
-): number {
-  if (isJcp(label)) return JCP_RATE;
-  if (!assetClass) return 0;
-
+function rateAt(brackets: WithholdingBracket[], date: string): number {
   let rate = 0;
 
-  for (const bracket of WITHHOLDING[assetClass]) {
-    if (bracket.from <= exDate) rate = bracket.rate;
+  for (const bracket of brackets) {
+    if (bracket.from <= date) rate = bracket.rate;
   }
 
   return rate;
+}
+
+export function withholdingRate(
+  assetClass: AssetClass | null,
+  paidAt: string,
+  label?: string,
+): number {
+  if (isJcp(label)) return rateAt(JCP, paidAt);
+  if (!assetClass) return 0;
+
+  return rateAt(WITHHOLDING[assetClass], paidAt);
 }
 
 function quantityOnExDate(
@@ -82,20 +90,18 @@ export function computeReceivedDividends(
         event.exDate,
       );
 
+      const paidAt = event.paymentDate ?? event.exDate;
       const gross = quantity * event.amount;
       const tax =
         gross *
-        withholdingRate(
-          classOf(event.ticker),
-          event.exDate,
-          event.paymentLabel,
-        );
+        withholdingRate(classOf(event.ticker), paidAt, event.paymentLabel);
 
       return {
         ticker: event.ticker,
         exDate: event.exDate,
         paymentDate: event.paymentDate ?? event.exDate,
         estimatedPayment: event.estimatedPayment ?? true,
+        label: event.paymentLabel ?? '',
         amountPerShare: event.amount,
         quantity,
         gross,

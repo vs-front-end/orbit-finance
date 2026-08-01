@@ -4,7 +4,9 @@ import {
   computeRealizedEvents,
   computeReceivedDividends,
   makeFxLookup,
+  mergeLedger,
   projectPendingDividends,
+  splitByPayment,
   totalPending,
 } from '@/domain';
 import { findAsset } from '@/services';
@@ -14,10 +16,12 @@ import {
   useDividendEvents,
   useDividendPayments,
   usePortfolios,
+  useStoredDividends,
   useUsdBrlRate,
   useUsdBrlSeries,
 } from './queries';
 import { useAdjustedTransactions } from './useAdjustedTransactions';
+import { useDividendFreeze } from './useDividendFreeze';
 
 const classOf = (ticker: string) => findAsset(ticker)?.assetClass ?? null;
 
@@ -31,6 +35,9 @@ export function useDashboardOverview() {
     useAdjustedTransactions();
   const eventsQuery = useDividendEvents();
   const paymentsQuery = useDividendPayments();
+  const ledgerQuery = useStoredDividends();
+
+  useDividendFreeze();
 
   const events = attachPaymentDates(
     eventsQuery.data ?? [],
@@ -44,6 +51,7 @@ export function useDashboardOverview() {
   const investmentPortfolios = portfoliosQuery.data ?? [];
 
   let receivedBRL = 0;
+  let announcedBRL = 0;
   let realizedBRL = 0;
   let pendingBRL = 0;
 
@@ -59,10 +67,22 @@ export function useDashboardOverview() {
       realizedBRL += realized.amount * rateAt(realized.date);
     }
 
-    const received = computeReceivedDividends(ownTransactions, events, classOf);
+    const merged = mergeLedger(
+      portfolio.id,
+      computeReceivedDividends(ownTransactions, events, classOf),
+      (ledgerQuery.data ?? []).filter(
+        (entry) => entry.portfolioId === portfolio.id,
+      ),
+    );
+    const { paid, pending: unpaid } = splitByPayment(merged, today);
 
-    for (const dividend of received) {
-      receivedBRL += dividend.received * rateAt(dividend.exDate);
+    // Câmbio da data do pagamento: é quando o dinheiro virou real de fato.
+    for (const dividend of paid) {
+      receivedBRL += dividend.received * rateAt(dividend.paymentDate);
+    }
+
+    for (const dividend of unpaid) {
+      announcedBRL += dividend.received * rateAt(dividend.paymentDate);
     }
 
     const pending = projectPendingDividends(
@@ -78,6 +98,7 @@ export function useDashboardOverview() {
     ...dashboard,
     dividends: {
       totalBRL: receivedBRL,
+      announcedBRL,
       pendingBRL,
       estimatedMonthlyBRL: pendingBRL,
     },

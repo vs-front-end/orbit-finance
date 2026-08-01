@@ -406,7 +406,7 @@ Deno.serve(async (req) => {
     }
 
     if (Array.isArray(body.dividends)) {
-      const range = typeof body.range === 'string' ? body.range : '5y';
+      const range = typeof body.range === 'string' ? body.range : '10y';
       const results = await Promise.all(
         (body.dividends as DividendRequest[]).map((request) =>
           fetchDividends(

@@ -9,6 +9,7 @@ import type { Portfolio } from '@/domain';
 import {
   assetsService,
   dividendsService,
+  ledgerService,
   portfoliosService,
   quotesService,
   targetsService,
@@ -26,6 +27,7 @@ export const queryKeys = {
   splits: (tickers: string[]) => ['splits', ...tickers] as const,
   usdBrl: ['usd-brl'] as const,
   targets: ['targets'] as const,
+  ledger: ['dividend-ledger'] as const,
 };
 
 const sessionCacheOptions = {
@@ -72,10 +74,6 @@ export function useAllTransactions() {
   });
 }
 
-// Dado de mercado é buscado uma vez para o universo inteiro de tickers. Com a
-// mesma chave em toda tela, Dashboard e carteiras dividem a mesma entrada de
-// cache e navegar não dispara busca nova. Quem precisa de um recorte filtra
-// localmente.
 export function useAllTickers(): string[] {
   const { data } = useAllTransactions();
 
@@ -129,6 +127,14 @@ export function useSplits() {
     enabled: tickers.length > 0,
     ...sessionCacheOptions,
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useStoredDividends() {
+  return useQuery({
+    queryKey: queryKeys.ledger,
+    queryFn: () => ledgerService.list(),
+    ...sessionCacheOptions,
   });
 }
 

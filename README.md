@@ -55,6 +55,36 @@ update fixed_incomes set "currentValue" = principal where "currentValue" is null
 alter table fixed_incomes alter column "currentValue" set not null;
 ```
 
+Para adicionar a tabela de proventos num projeto que já existia:
+
+```sql
+create table if not exists dividends (
+  id               text primary key,
+  user_id          uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  "portfolioId"    text not null,
+  ticker           text not null,
+  "exDate"         text not null,
+  "paymentDate"    text not null,
+  label            text not null default '',
+  "amountPerShare" double precision not null,
+  quantity         double precision not null,
+  gross            double precision not null,
+  tax              double precision not null,
+  received         double precision not null,
+  currency         text not null,
+  "estimatedPayment" boolean not null default false,
+  "editedManually" boolean not null default false
+);
+
+create index if not exists dividends_portfolio_idx on dividends ("portfolioId");
+create index if not exists dividends_payment_idx on dividends ("paymentDate");
+
+alter table dividends enable row level security;
+drop policy if exists owner_all on dividends;
+create policy owner_all on dividends for all to authenticated
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
+
 Deploy the Edge Function after pulling:
 
 ```bash

@@ -49,14 +49,38 @@ create table if not exists portfolio_snapshots (
   currency      text not null
 );
 
+-- Provento já apurado e congelado (id = portfolioId-ticker-dataEx). O Yahoo só
+-- devolve os últimos anos e a B3 só uns 12 meses, então o que é apurado
+-- enquanto as fontes têm o registro fica gravado aqui e vira a verdade.
+-- editedManually protege a linha de ser reescrita pela apuração automática.
+create table if not exists dividends (
+  id               text primary key,
+  user_id          uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  "portfolioId"    text not null,
+  ticker           text not null,
+  "exDate"         text not null,
+  "paymentDate"    text not null,
+  label            text not null default '',
+  "amountPerShare" double precision not null,
+  quantity         double precision not null,
+  gross            double precision not null,
+  tax              double precision not null,
+  received         double precision not null,
+  currency         text not null,
+  "estimatedPayment" boolean not null default false,
+  "editedManually" boolean not null default false
+);
+
 create index if not exists transactions_portfolio_idx on transactions ("portfolioId");
 create index if not exists portfolio_snapshots_date_idx on portfolio_snapshots (date);
+create index if not exists dividends_portfolio_idx on dividends ("portfolioId");
+create index if not exists dividends_payment_idx on dividends ("paymentDate");
 -- RLS: cada usuário só enxerga e altera as próprias linhas.
 do $$
 declare
   t text;
 begin
-  foreach t in array array['portfolios', 'transactions', 'portfolio_snapshots', 'assets']
+  foreach t in array array['portfolios', 'transactions', 'portfolio_snapshots', 'assets', 'dividends']
   loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists owner_all on %I', t);

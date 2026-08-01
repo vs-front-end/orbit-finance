@@ -2,12 +2,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 
 import {
+  ledgerService,
   portfoliosService,
   targetsService,
   type AllocationTargets,
   type NewPortfolio,
   type NewTransaction,
   type UpdateTransaction,
+  type DividendEdit,
 } from '@/services';
 
 import { queryKeys } from './queries';
@@ -110,5 +112,15 @@ export function useSetTargets() {
     mutationFn: (targets: AllocationTargets) =>
       targetsService.setTargets(targets),
     onSuccess: () => invalidate([queryKeys.targets]),
+  });
+}
+
+export function useEditDividend() {
+  const invalidate = useInvalidate();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: DividendEdit }) =>
+      ledgerService.edit(id, input),
+    onSuccess: () => invalidate([queryKeys.ledger]),
   });
 }

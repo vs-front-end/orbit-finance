@@ -5,6 +5,7 @@ export * from './useTableSort';
 export * from './usePositionViews';
 export * from './useAdjustedTransactions';
 export * from './useDividends';
+export * from './useDividendFreeze';
 export * from './useDashboardData';
 export * from './useDashboardOverview';
 export * from './useDashboardHistory';
