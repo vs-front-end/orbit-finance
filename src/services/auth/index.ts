@@ -1,4 +1,9 @@
-import { userSchema, type AuthProvider, type User } from '@/domain';
+import {
+  authProviderSchema,
+  userSchema,
+  type AuthProvider,
+  type User,
+} from '@/domain';
 
 import { supabase } from '../supabase';
 
@@ -16,12 +21,13 @@ export const authService: AuthService = {
 
     const { user } = session;
     const metadata = user.user_metadata ?? {};
+    const provider = authProviderSchema.safeParse(user.app_metadata?.provider);
 
     const parsed = userSchema.safeParse({
       id: user.id,
       name: metadata.name ?? metadata.full_name ?? user.email ?? 'Usuário',
       email: user.email ?? '',
-      provider: 'github',
+      provider: provider.success ? provider.data : 'github',
     });
     return parsed.success ? parsed.data : null;
   },

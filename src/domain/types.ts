@@ -43,7 +43,7 @@ export const quoteSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 
-export const authProviderSchema = z.enum(['github']);
+export const authProviderSchema = z.enum(['github', 'google']);
 
 export const userSchema = z.object({
   id: z.string(),
