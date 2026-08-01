@@ -101,3 +101,73 @@ describe('imposto por rótulo', () => {
     expect(result.estimatedPayment).toBe(true);
   });
 });
+
+describe('unit com classes misturadas (TAEE11)', () => {
+  const taee: DividendPayment[] = [
+    {
+      ticker: 'TAEE11',
+      dataCom: '2026-05-11',
+      paymentDate: '2026-08-26',
+      rate: 0.55899814398,
+      label: 'JRS CAP PROPRIO',
+    },
+    {
+      ticker: 'TAEE11',
+      dataCom: '2026-05-11',
+      paymentDate: '2026-08-26',
+      rate: 0.18633271466,
+      label: 'JRS CAP PROPRIO',
+    },
+    {
+      ticker: 'TAEE11',
+      dataCom: '2025-11-14',
+      paymentDate: '2026-01-28',
+      rate: 0.51895321314,
+      label: 'DIVIDENDO',
+    },
+    {
+      ticker: 'TAEE11',
+      dataCom: '2025-11-14',
+      paymentDate: '2026-01-28',
+      rate: 0.41940723351,
+      label: 'JRS CAP PROPRIO',
+    },
+  ];
+
+  it('picks the JCP record when the amount matches the JCP rate', () => {
+    const [result] = attachPaymentDates(
+      [{ ticker: 'TAEE11', exDate: '2025-11-17', amount: 0.41940723351 }],
+      taee,
+    );
+
+    expect(result.paymentLabel).toBe('JRS CAP PROPRIO');
+  });
+
+  it('picks the dividend record when the amount matches the dividend rate', () => {
+    const [result] = attachPaymentDates(
+      [{ ticker: 'TAEE11', exDate: '2025-11-17', amount: 0.51895321314 }],
+      taee,
+    );
+
+    expect(result.paymentLabel).toBe('DIVIDENDO');
+  });
+
+  it('still resolves the payment date when classes tie on the same label', () => {
+    const [result] = attachPaymentDates(
+      [{ ticker: 'TAEE11', exDate: '2026-05-12', amount: 0.55899814398 }],
+      taee,
+    );
+
+    expect(result.paymentDate).toBe('2026-08-26');
+    expect(result.estimatedPayment).toBe(false);
+  });
+
+  it('falls back to the closest data-com when no amount is given', () => {
+    const [result] = attachPaymentDates(
+      [{ ticker: 'TAEE11', exDate: '2025-11-17' }],
+      taee,
+    );
+
+    expect(result.paymentDate).toBe('2026-01-28');
+  });
+});

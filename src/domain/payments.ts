@@ -34,24 +34,36 @@ function daysBetween(from: string, to: string): number {
   return Math.round((toTime(to) - toTime(from)) / DAY_MS);
 }
 
+// Unit como TAEE11 e BPAC11 traz ON, PN e a própria unit na mesma data-com, e
+// às vezes dividendo e JCP juntos. A data-com sozinha não desempata, e pegar o
+// registro errado troca o rótulo — logo, a alíquota. O valor por cota desempata:
+// o do Yahoo é o da unit.
 function findPayment(
   payments: DividendPayment[],
   exDate: string,
+  amount?: number,
 ): DividendPayment | null {
-  let closest: DividendPayment | null = null;
-  let smallestGap = Number.POSITIVE_INFINITY;
-
-  for (const payment of payments) {
+  const candidates = payments.filter((payment) => {
     const gap = daysBetween(payment.dataCom, exDate);
-    if (gap < 0 || gap > MATCH_WINDOW_DAYS) continue;
+    return gap >= 0 && gap <= MATCH_WINDOW_DAYS;
+  });
 
-    if (gap < smallestGap) {
-      closest = payment;
-      smallestGap = gap;
-    }
-  }
+  if (candidates.length === 0) return null;
 
-  return closest;
+  const smallestGap = Math.min(
+    ...candidates.map((payment) => daysBetween(payment.dataCom, exDate)),
+  );
+  const closest = candidates.filter(
+    (payment) => daysBetween(payment.dataCom, exDate) === smallestGap,
+  );
+
+  if (closest.length === 1 || amount === undefined) return closest[0];
+
+  return closest.reduce((best, payment) =>
+    Math.abs(payment.rate - amount) < Math.abs(best.rate - amount)
+      ? payment
+      : best,
+  );
 }
 
 function estimateLagFromExDate(payments: DividendPayment[]): number {
@@ -65,7 +77,7 @@ function estimateLagFromExDate(payments: DividendPayment[]): number {
 }
 
 export function attachPaymentDates<
-  T extends { ticker: string; exDate: string },
+  T extends { ticker: string; exDate: string; amount?: number },
 >(items: T[], payments: DividendPayment[]): WithPayment<T>[] {
   const byTicker = new Map<string, DividendPayment[]>();
 
@@ -81,7 +93,11 @@ export function attachPaymentDates<
   }
 
   return items.map((item) => {
-    const matched = findPayment(byTicker.get(item.ticker) ?? [], item.exDate);
+    const matched = findPayment(
+      byTicker.get(item.ticker) ?? [],
+      item.exDate,
+      item.amount,
+    );
 
     if (matched) {
       return {
