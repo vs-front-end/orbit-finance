@@ -1,7 +1,6 @@
 import {
   attachPaymentDates,
   averageMonthlyReceived,
-  computeRealizedEvents,
   computeReceivedDividends,
   makeFxLookup,
   mergeLedger,
@@ -31,8 +30,8 @@ const classOf = (ticker: string) => findAsset(ticker)?.assetClass ?? null;
 
 export type DashboardMover = {
   ticker: string;
-  dailyPLPercent: number;
-  dailyPL: number;
+  netPLPercent: number;
+  netPL: number;
 };
 
 export type DashboardDividendsInsight = {
@@ -48,40 +47,34 @@ export type DashboardDividendsInsight = {
 function rankMovers(
   rows: Array<{
     ticker: string;
-    dailyPL: number;
-    marketValue: number;
+    netPL: number;
+    investedValue: number;
     hasQuote: boolean;
   }>,
 ): DashboardMover[] {
-  const byTicker = new Map<
-    string,
-    { dailyPL: number; previousValue: number }
-  >();
+  const byTicker = new Map<string, { netPL: number; investedValue: number }>();
 
   for (const row of rows) {
     if (!row.hasQuote) continue;
 
-    const previousValue = row.marketValue - row.dailyPL;
     const current = byTicker.get(row.ticker) ?? {
-      dailyPL: 0,
-      previousValue: 0,
+      netPL: 0,
+      investedValue: 0,
     };
-    current.dailyPL += row.dailyPL;
-    current.previousValue += previousValue;
+    current.netPL += row.netPL;
+    current.investedValue += row.investedValue;
     byTicker.set(row.ticker, current);
   }
 
   return [...byTicker.entries()]
     .map(([ticker, entry]) => ({
       ticker,
-      dailyPL: entry.dailyPL,
-      dailyPLPercent:
-        entry.previousValue > 0
-          ? (entry.dailyPL / entry.previousValue) * 100
-          : 0,
+      netPL: entry.netPL,
+      netPLPercent:
+        entry.investedValue > 0 ? (entry.netPL / entry.investedValue) * 100 : 0,
     }))
-    .filter((entry) => entry.dailyPL !== 0)
-    .sort((a, b) => b.dailyPLPercent - a.dailyPLPercent);
+    .filter((entry) => entry.netPL !== 0)
+    .sort((a, b) => b.netPLPercent - a.netPLPercent);
 }
 
 export function useDashboardOverview() {
@@ -113,7 +106,6 @@ export function useDashboardOverview() {
 
   let receivedBRL = 0;
   let announcedBRL = 0;
-  let realizedBRL = 0;
   let monthBRL = 0;
   const paidBRL: Array<{
     ticker: string;
@@ -128,10 +120,6 @@ export function useDashboardOverview() {
     const isUsd = portfolio.currency === 'USD';
     const rateAt =
       isUsd && fxSeries.length > 0 ? usdToBrlAt : () => (isUsd ? rate : 1);
-
-    for (const realized of computeRealizedEvents(ownTransactions)) {
-      realizedBRL += realized.amount * rateAt(realized.date);
-    }
 
     const merged = mergeLedger(
       portfolio.id,
@@ -165,11 +153,11 @@ export function useDashboardOverview() {
   }
 
   const movers = rankMovers(
-    dashboard.perPortfolio.flatMap(({ views }) =>
-      views.map((view) => ({
+    dashboard.perPortfolio.flatMap(({ viewsBRL }) =>
+      viewsBRL.map((view) => ({
         ticker: view.ticker,
-        dailyPL: view.dailyPL,
-        marketValue: view.marketValue,
+        netPL: view.netPL,
+        investedValue: view.investedValue,
         hasQuote: view.hasQuote,
       })),
     ),
@@ -189,12 +177,11 @@ export function useDashboardOverview() {
     ...dashboard,
     dividends,
     movers,
-    topGainers: movers.filter((mover) => mover.dailyPLPercent > 0).slice(0, 5),
+    topGainers: movers.filter((mover) => mover.netPLPercent > 0).slice(0, 5),
     topLosers: movers
-      .filter((mover) => mover.dailyPLPercent < 0)
+      .filter((mover) => mover.netPLPercent < 0)
       .reverse()
       .slice(0, 5),
-    totalPLBRL: dashboard.consolidated.netPL + realizedBRL,
     isFetchingQuotes:
       dashboard.isFetchingQuotes ||
       eventsQuery.isFetching ||

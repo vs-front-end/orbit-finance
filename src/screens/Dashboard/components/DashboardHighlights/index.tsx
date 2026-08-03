@@ -31,8 +31,8 @@ const selectorClass =
   'h-8 w-auto gap-1 border-0 bg-background px-3 text-xs text-foreground shadow-none hover:bg-background';
 
 const EMPTY_LABEL: Record<HighlightsView, string> = {
-  gainers: 'Sem altas no dia',
-  losers: 'Sem baixas no dia',
+  gainers: 'Nenhuma alta em aberto',
+  losers: 'Nenhuma baixa em aberto',
   payers: 'Nenhum provento recebido ainda',
 };
 
@@ -75,11 +75,11 @@ export function DashboardHighlights({
   > = {
     gainers: gainers.map((mover) => ({
       ticker: mover.ticker,
-      value: <PLValue value={mover.dailyPLPercent} />,
+      value: <PLValue value={mover.netPLPercent} />,
     })),
     losers: losers.map((mover) => ({
       ticker: mover.ticker,
-      value: <PLValue value={mover.dailyPLPercent} />,
+      value: <PLValue value={mover.netPLPercent} />,
     })),
     payers: payers.map((payer) => ({
       ticker: payer.ticker,

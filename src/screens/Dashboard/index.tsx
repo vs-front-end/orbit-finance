@@ -34,7 +34,6 @@ export function Dashboard() {
         consolidated={data.consolidated}
         estimatedMonthlyDividends={data.dividends.estimatedMonthlyBRL}
         totalDividends={data.dividends.totalBRL}
-        totalPL={data.totalPLBRL}
       />
 
       <div className='grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4'>

@@ -8,20 +8,20 @@ type ConsolidatedSummary = {
   investedValue: number;
   netPL: number;
   netPLPercent: number;
+  dailyPL: number;
+  dailyPLPercent: number;
 };
 
 type DashboardSummaryProps = {
   consolidated: ConsolidatedSummary;
   estimatedMonthlyDividends: number;
   totalDividends: number;
-  totalPL: number;
 };
 
 export function DashboardSummary({
   consolidated,
   estimatedMonthlyDividends,
   totalDividends,
-  totalPL,
 }: DashboardSummaryProps) {
   const month = monthFormatter
     .format(new Date())
@@ -51,8 +51,12 @@ export function DashboardSummary({
           percent={consolidated.netPLPercent}
         />
       </StatCard>
-      <StatCard label='P/L total'>
-        <PLValue value={totalPL} currency='BRL' />
+      <StatCard label='P/L diário'>
+        <PLValue
+          value={consolidated.dailyPL}
+          currency='BRL'
+          percent={consolidated.dailyPLPercent}
+        />
       </StatCard>
     </div>
   );

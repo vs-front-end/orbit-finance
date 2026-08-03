@@ -58,6 +58,7 @@ export function useDashboardData() {
     return {
       portfolio,
       views,
+      viewsBRL,
       summary: summarizePositions(views),
       summaryBRL: summarizePositions(viewsBRL),
     };
